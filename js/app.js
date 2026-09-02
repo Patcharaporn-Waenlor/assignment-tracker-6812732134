@@ -123,6 +123,30 @@ class HomeworkTrackerApp {
     }
   }
 
+  // Filter by Stat Card Click
+  filterByStatCard(status) {
+    this.statusFilter = status;
+    this.activeView = 'list';
+
+    // Update active pill button state UI
+    document.querySelectorAll('.pill-btn').forEach(btn => {
+      if (btn.getAttribute('data-status') === status) {
+        btn.classList.add('active');
+      } else {
+        btn.classList.remove('active');
+      }
+    });
+
+    // Update view toggle active state UI
+    document.getElementById('btn-view-list')?.classList.add('active');
+    document.getElementById('btn-view-calendar')?.classList.remove('active');
+
+    this.renderAll();
+
+    // Smooth scroll down to toolbar & task list
+    document.querySelector('.toolbar')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
   // Dashboard Stats Summary
   renderStats() {
     const total = this.tasks.length;
