@@ -1,45 +1,86 @@
-# ระบบติดตามการบ้านและงานส่ง (Assignment & Project Tracker)
-> **โครงงานเทคโนโลยีและแอปพลิเคชันสำหรับนักศึกษา**
+# ระบบติดตามการบ้านและงานส่ง (Homework & Assignment Tracker)
+
+แอปพลิเคชันสำหรับช่วยนักศึกษาจัดการการบ้าน งานเดี่ยว งานกลุ่ม และโปรเจกต์จากหลายรายวิชาในที่เดียว ลดปัญหาการลืมส่งงาน และช่วยวางแผนการเรียนได้อย่างมีประสิทธิภาพ
 
 ---
 
-## 🎯 แนวคิดของโครงการ (Project Concept)
-แอปพลิเคชันสำหรับช่วยนักศึกษาจัดการการบ้าน งานเดี่ยว งานกลุ่ม และโปรเจกต์จากหลายรายวิชาในที่เดียว ช่วยลดปัญหาการลืมส่งงาน ติดตามภาระงานคงค้างได้อย่างเห็นภาพ และช่วยวางแผนการเรียนได้อย่างมีประสิทธิภาพ
+## 🛠️ Tech Stack & Architecture
+
+- **Frontend**: Next.js 14 (App Router, TypeScript)
+- **Styling**: Tailwind CSS (Minimalist Slate/Navy Theme, Thai Font `Prompt`)
+- **Database / Backend**: Supabase (PostgreSQL) + Local Storage Fallback Mode
+- **Icons**: Lucide React
+- **Deploy Target**: Vercel Ready
 
 ---
 
-## ✨ ฟังก์ชันการทำงานหลัก (Core Features)
+## 🚀 ฟังก์ชันหลัก (Core Features)
 
-1. 📝 **บันทึกและจัดการงานง่าย (Task Management)**:
-   - กรอกชื่องาน, รายวิชา, ประเภทงาน (เดี่ยว/กลุ่ม/โปรเจกต์), รายละเอียด, น้ำหนักคะแนน (%) และกำหนดส่ง
-2. 🚨 **แจ้งเตือนก่อนเดดไลน์ (Urgent Deadline Warning Banner)**:
-   - แสดงแถบเตือนสีแดง/ส้ม สำหรับงานที่มีกำหนดส่งภายใน 48 ชั่วโมง พร้อมนับเวลาถอยหลัง
-3. 📊 **Dashboard สรุปภาพรวม (Visual Dashboard & Analytics)**:
-   - การ์ดสถิติสรุปจำนวนงานทั้งหมด, งานที่ส่งแล้ว, ค้างส่ง, และงานด่วน
-   - กราฟวงแหวน (Completion Ring) แสดงเปอร์เซ็นต์การส่งงานรวม
-   - แถบความคืบหน้า (Progress Bar) แยกรายวิชา
-4. 📌 **ติดตามสถานะงาน (Kanban Board & List View)**:
-   - สลับมุมมอง Kanban Board (`To Do` -> `In Progress` -> `Completed`) หรือ List View
-5. 🔍 **ค้นหาและกรองงาน (Search & Smart Filtering)**:
-   - ค้นหาด้วยชื่องาน/รายวิชา + กรองตามรายวิชา, สถานะ และประเภทงาน
-6. 📅 **ปฏิทินการเรียน (Academic Calendar View)**:
-   - ปฏิทินแสดงเดดไลน์การบ้านและสอบในรูปแบบรายเดือน
-7. 🤖 **ระบบจัดลำดับความสำคัญด้วย AI (AI Smart Scheduler)**:
-   - อัลกอริทึมวิเคราะห์และคำนวณ **Urgency Index (0-100)** โดยประมวลผลจากเดดไลน์ น้ำหนักคะแนน และความยาก เพื่อแนะนำงานที่ควรเริ่มทำก่อน
+1. **บันทึกงาน (Task Creation & Modal Form)**:
+   - ฟอร์มกรอกชื่องาน, รายวิชา, รายละเอียด, วันกำหนดส่ง (Due Date) และสถานะเริ่มต้น
+2. **แจ้งเตือนก่อนเดดไลน์ (Urgent Deadline Banner)**:
+   - ตรวจสอบคำนวณวันคงเหลือก่อนถึงกำหนดส่ง แสดง Banner เตือนสีส้ม/แดงเมื่อเหลือน้อยกว่า 48 ชั่วโมง
+3. **ติดตามสถานะงาน (Task Status Tracker)**:
+   - 3 สถานะชัดเจนพร้อม Badge แยกสี:
+     - 🟢 **ส่งแล้ว (done)** (สีเขียว)
+     - 🟡 **กำลังทำ (in_progress)** (สีเหลือง/ส้ม)
+     - 🔴 **ยังไม่เริ่ม (not_started)** (สีแดง/ชมพู)
+4. **Dashboard สรุปงาน (Summary Metrics)**:
+   - การ์ดสรุปจำนวนงานทั้งหมด, ส่งแล้ว, กำลังทำ และยังไม่เริ่ม
+5. **ค้นหาและกรองงาน (Search & Filtering)**:
+   - ค้นหาด้วยชื่องาน/รายวิชา แบบ Real-time และกรองสถานะงาน
 
 ---
 
-## 🚀 การพัฒนาต่อยอดในอนาคต (Scalability Roadmap for Presentation)
+## 🗄️ โครงสร้างตารางข้อมูล Supabase
 
-- 🔗 **LMS Auto-Sync**: เชื่อมต่อ Microsoft Teams หรือ Google Classroom ดึงกำหนดส่งงานอัตโนมัติผ่าน OAuth2 API
-- 🤖 **AI Study Assistant**: ช่วยวิเคราะห์โจทย์การบ้าน สรุปขั้นตอน และประเมินชั่วโมงที่ต้องใช้
-- 📱 **Multi-channel Alerts**: แจ้งเตือนเตือนภัยผ่าน LINE Notify หรือ Telegram ก่อนเดดไลน์
-- 📈 **Academic Workload Analytics**: Dashboard ช่วยอาจารย์วิเคราะห์ภาระงานของนักศึกษาในแต่ละสัปดาห์
+รัน SQL Script นี้ใน **Supabase SQL Editor** ของคุณเพื่อสร้างตาราง `tasks`:
+
+```sql
+create table if not exists public.tasks (
+  id uuid default gen_random_uuid() primary key,
+  title text not null,
+  subject text not null,
+  description text,
+  due_date date not null,
+  status text not null check (status in ('not_started', 'in_progress', 'done')),
+  created_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
+
+-- Enable RLS & Policy
+alter table public.tasks enable row level security;
+create policy "Allow public access" on public.tasks for all using (true) with check (true);
+```
 
 ---
 
-## 🛠️ เทคโนโลยีที่ใช้ (Tech Stack)
+## 💻 การติดตั้งและรันในเครื่อง (Local Setup)
 
-- **Frontend**: HTML5, Vanilla CSS3 (Custom Glassmorphic Design System, Theme Switcher), Vanilla JavaScript (ES6 State Manager)
-- **Typography & Icons**: Google Fonts (`Kanit`, `Plus Jakarta Sans`), FontAwesome 6.5
-- **Data Storage**: LocalStorage Persistence API
+1. **ติดตั้ง Dependencies**:
+   ```bash
+   npm install
+   ```
+
+2. **(Optional) ตั้งค่า Supabase Environment Variables**:
+   สร้างไฟล์ `.env.local` แล้วใส่คีย์โครงการ Supabase ของคุณ:
+   ```env
+   NEXT_PUBLIC_SUPABASE_URL=https://your-project-id.supabase.co
+   NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
+   ```
+   *(หมายเหตุ: หากยังไม่ได้ใส่คีย์ ระบบจะใช้ LocalStorage Fallback ให้ทดสอบและใช้งานได้ทันที)*
+
+3. **รัน Development Server**:
+   ```bash
+   npm run dev
+   ```
+   เปิดเบราว์เซอร์ไปที่ `http://localhost:3000`
+
+---
+
+## 🌐 การ Deploy ขึ้น Vercel
+
+1. Push โค้ดทั้งหมดขึ้น GitHub
+2. ไปที่ [Vercel Dashboard](https://vercel.com) -> กด **Add New Project**
+3. เลือก Repository `assignment-tracker-6812732134`
+4. (ถ้ามี Supabase) ใส่ Environment Variables `NEXT_PUBLIC_SUPABASE_URL` และ `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+5. กด **Deploy** เรียบร้อยทันที!
