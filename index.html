@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ระบบติดตามการบ้านและงานส่ง (Assignment & Project Tracker)</title>
+  <meta name="description" content="แอปพลิเคชันสำหรับช่วยนักศึกษาจัดการการบ้าน งานเดี่ยว งานกลุ่ม และโปรเจกต์จากหลายรายวิชาในที่เดียว">
+  
+  <!-- Google Fonts & FontAwesome -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  
+  <!-- Custom Styles -->
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body data-theme="dark">
+  <div class="app-container">
+    
+    <!-- Top Navigation Bar -->
+    <header class="navbar">
+      <div class="brand-container">
+        <div class="brand-logo">
+          <i class="fa-solid fa-graduation-cap"></i>
+        </div>
+        <div class="brand-text">
+          <h1>Assignment Tracker</h1>
+          <p>ระบบติดตามการบ้านและงานส่ง | รหัสนักศึกษา 6812732134</p>
+        </div>
+      </div>
+
+      <div class="nav-actions">
+        <div class="current-time-badge" id="live-clock">
+          <i class="fa-regular fa-clock"></i> กำลังโหลด...
+        </div>
+        <button class="btn-icon" id="btn-toggle-theme" title="สลับธีม">
+          <i class="fa-solid fa-moon"></i>
+        </button>
+        <button class="btn-icon" id="btn-urgent-notif" title="การแจ้งเตือนเดดไลน์ด่วน" onclick="app.switchToTasksAndHighlight('')">
+          <i class="fa-regular fa-bell"></i>
+          <span class="badge-dot" id="urgent-badge-dot" style="display: none;"></span>
+        </button>
+        <button class="btn-primary" onclick="app.openAddTaskModal()">
+          <i class="fa-solid fa-plus"></i> เพิ่มงานใหม่
+        </button>
+      </div>
+    </header>
+
+    <!-- Urgent Deadline Warning Banner -->
+    <div id="urgent-banner-container"></div>
+
+    <!-- Main Navigation Tabs -->
+    <nav class="tab-navigation">
+      <button class="nav-tab active" data-tab="dashboard">
+        <i class="fa-solid fa-chart-pie"></i> Dashboard สรุปภาพรวม
+      </button>
+      <button class="nav-tab" data-tab="tasks">
+        <i class="fa-solid fa-list-check"></i> รายการงาน & Kanban
+      </button>
+      <button class="nav-tab" data-tab="calendar">
+        <i class="fa-regular fa-calendar-days"></i> ปฏิทินกำหนดส่ง
+      </button>
+      <button class="nav-tab" data-tab="ai-scheduler">
+        <i class="fa-solid fa-wand-magic-sparkles"></i> AI Smart Scheduler
+      </button>
+      <button class="nav-tab" data-tab="collaboration">
+        <i class="fa-solid fa-users"></i> ติดตามงานกลุ่ม
+      </button>
+      <button class="nav-tab" data-tab="scalability">
+        <i class="fa-solid fa-rocket"></i> การพัฒนาต่อยอดอนาคต
+      </button>
+    </nav>
+
+    <!-- Main Content Area -->
+    <main class="main-content">
+      
+      <!-- ================= TAB 1: DASHBOARD ================= -->
+      <section class="tab-pane active" id="tab-dashboard">
+        <div class="section-header">
+          <div class="section-title">
+            <h2><i class="fa-solid fa-gauge-high" style="color: var(--primary);"></i> Dashboard สรุปสถานะการบ้าน</h2>
+            <p>ภาพรวมงานทั้งหมด เปอร์เซ็นต์ความสำเร็จ และงานที่ต้องเร่งดำเนินการส่ง</p>
+          </div>
+          <div>
+            <button class="btn-secondary" onclick="app.resetDemoData()">
+              <i class="fa-solid fa-arrows-rotate"></i> รีเซ็ตข้อมูลตัวอย่าง
+            </button>
+          </div>
+        </div>
+
+        <!-- Metrics Cards Grid -->
+        <div class="metrics-grid">
+          <div class="metric-card">
+            <div class="metric-icon total"><i class="fa-solid fa-folder-open"></i></div>
+            <div class="metric-info">
+              <div class="val" id="metric-total">0</div>
+              <div class="lbl">งานทั้งหมดในระบบ</div>
+            </div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-icon completed"><i class="fa-solid fa-circle-check"></i></div>
+            <div class="metric-info">
+              <div class="val" id="metric-completed">0</div>
+              <div class="lbl">ส่งแล้ว (Completed)</div>
+            </div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-icon pending"><i class="fa-solid fa-clock"></i></div>
+            <div class="metric-info">
+              <div class="val" id="metric-pending">0</div>
+              <div class="lbl">ค้างส่ง (Pending)</div>
+            </div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-icon urgent"><i class="fa-solid fa-fire"></i></div>
+            <div class="metric-info">
+              <div class="val" id="metric-urgent">0</div>
+              <div class="lbl">งานด่วน (ส่งใน 48 ชม.)</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Analytics Grid -->
+        <div class="analytics-grid">
+          <!-- Subject Progress Breakdown -->
+          <div class="analytics-card">
+            <div class="analytics-card-header">
+              <h3><i class="fa-solid fa-book-bookmark" style="color: var(--primary);"></i> สรุปความคืบหน้าแยกตามรายวิชา</h3>
+            </div>
+            <div class="subject-progress-list" id="subject-progress-container">
+              <!-- Dynamically rendered -->
+            </div>
+          </div>
+
+          <!-- Circular Progress Ring -->
+          <div class="analytics-card">
+            <div class="analytics-card-header">
+              <h3><i class="fa-solid fa-bullseye" style="color: var(--status-completed);"></i> อัตราการส่งงานรวม</h3>
+            </div>
+            <div class="completion-ring-wrapper">
+              <div class="ring-container">
+                <svg>
+                  <defs>
+                    <linearGradient id="ring-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                      <stop offset="0%" stop-color="#6366f1" />
+                      <stop offset="100%" stop-color="#10b981" />
+                    </linearGradient>
+                  </defs>
+                  <circle class="ring-bg" cx="85" cy="85" r="70"></circle>
+                  <circle class="ring-fill" id="ring-fill" cx="85" cy="85" r="70"></circle>
+                </svg>
+                <div class="ring-text">
+                  <div class="percentage" id="ring-percentage-text">0%</div>
+                  <div class="subtext">เสร็จสมบูรณ์</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= TAB 2: TASKS & KANBAN ================= -->
+      <section class="tab-pane" id="tab-tasks">
+        <div class="section-header">
+          <div class="section-title">
+            <h2><i class="fa-solid fa-list-check" style="color: var(--primary);"></i> จัดการการบ้านและโปรเจกต์</h2>
+            <p>ติดตามสถานะ ค้นหา และจัดหมวดหมู่งานเดี่ยว งานกลุ่ม และโปรเจกต์</p>
+          </div>
+        </div>
+
+        <!-- Task Controls Toolbar -->
+        <div class="task-controls">
+          <div class="search-box">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <input type="text" id="search-input" placeholder="ค้นหาชื่องาน, รายวิชา หรือรายละเอียด...">
+          </div>
+
+          <div class="filter-group">
+            <select class="select-filter" id="filter-subject">
+              <option value="all">ทุกรายวิชา</option>
+            </select>
+
+            <select class="select-filter" id="filter-status">
+              <option value="all">ทุกสถานะ</option>
+              <option value="to-do">ยังไม่ได้เริ่ม (To Do)</option>
+              <option value="in-progress">กำลังทำ (In Progress)</option>
+              <option value="completed">ส่งแล้ว (Completed)</option>
+            </select>
+
+            <select class="select-filter" id="filter-type">
+              <option value="all">ทุกประเภทงาน</option>
+              <option value="individual">งานเดี่ยว</option>
+              <option value="group">งานกลุ่ม</option>
+              <option value="project">โปรเจกต์</option>
+            </select>
+          </div>
+
+          <div class="view-toggle">
+            <button class="btn-view active" id="btn-view-kanban" title="Kanban Board"><i class="fa-solid fa-table-columns"></i> Kanban</button>
+            <button class="btn-view" id="btn-view-list" title="List View"><i class="fa-solid fa-list"></i> รายการ</button>
+          </div>
+        </div>
+
+        <!-- Kanban Board View -->
+        <div class="kanban-board" id="kanban-view">
+          <!-- Column 1: To Do -->
+          <div class="kanban-column">
+            <div class="kanban-header">
+              <div class="kanban-title"><i class="fa-regular fa-circle" style="color: var(--status-pending);"></i> ยังไม่ได้เริ่ม (To Do)</div>
+              <span class="task-count-badge" id="count-todo">0</span>
+            </div>
+            <div class="kanban-cards-container" id="kanban-todo-list"></div>
+          </div>
+
+          <!-- Column 2: In Progress -->
+          <div class="kanban-column">
+            <div class="kanban-header">
+              <div class="kanban-title"><i class="fa-solid fa-spinner" style="color: var(--status-progress);"></i> กำลังทำ (In Progress)</div>
+              <span class="task-count-badge" id="count-progress">0</span>
+            </div>
+            <div class="kanban-cards-container" id="kanban-progress-list"></div>
+          </div>
+
+          <!-- Column 3: Completed -->
+          <div class="kanban-column">
+            <div class="kanban-header">
+              <div class="kanban-title"><i class="fa-solid fa-circle-check" style="color: var(--status-completed);"></i> ส่งแล้ว (Completed)</div>
+              <span class="task-count-badge" id="count-completed">0</span>
+            </div>
+            <div class="kanban-cards-container" id="kanban-completed-list"></div>
+          </div>
+        </div>
+
+        <!-- List View Container -->
+        <div class="list-view-container" id="list-view" style="display: none;">
+          <div id="list-view-container" style="width: 100%;"></div>
+        </div>
+      </section>
+
+      <!-- ================= TAB 3: CALENDAR ================= -->
+      <section class="tab-pane" id="tab-calendar">
+        <div class="section-header">
+          <div class="section-title">
+            <h2><i class="fa-regular fa-calendar-days" style="color: var(--primary);"></i> ปฏิทินการเรียนและกำหนดส่งงาน</h2>
+            <p>แสดงภาพรวมเดดไลน์การบ้านตามวันที่ในเดือน</p>
+          </div>
+        </div>
+
+        <div class="calendar-card">
+          <div class="calendar-nav-header">
+            <button class="btn-secondary" onclick="app.navigateCalendar(-1)"><i class="fa-solid fa-chevron-left"></i> เดือนก่อนหน้า</button>
+            <h3 id="calendar-month-label" style="font-size: 1.3rem; font-weight: 700;">กันยายน 2569</h3>
+            <button class="btn-secondary" onclick="app.navigateCalendar(1)">เดือนถัดไป <i class="fa-solid fa-chevron-right"></i></button>
+          </div>
+          <div class="calendar-grid" id="calendar-grid-container">
+            <!-- Rendered by JS -->
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= TAB 4: AI SMART SCHEDULER ================= -->
+      <section class="tab-pane" id="tab-ai-scheduler">
+        <div class="section-header">
+          <div class="section-title">
+            <h2><i class="fa-solid fa-wand-magic-sparkles" style="color: var(--accent);"></i> AI Smart Priority Scheduler</h2>
+            <p>ระบบจัดลำดับความสำคัญของงานด้วย AI ช่วยวางแผนว่าควรเริ่มทำชิ้นไหนก่อนโดยอัตโนมัติ</p>
+          </div>
+        </div>
+
+        <div class="ai-scheduler-container">
+          <div class="ai-card">
+            <span class="ai-badge"><i class="fa-solid fa-brain"></i> AI Recommendation Algorithm</span>
+            <h3 style="font-size: 1.3rem; margin-bottom: 10px;">การวิเคราะห์ลำดับความสำคัญของงาน</h3>
+            <p style="font-size: 0.88rem; color: var(--text-secondary); margin-bottom: 20px;">
+              ระบบจะคำนวณ <strong>Urgency Index (0 - 100)</strong> โดยประมวลผลจากปัจจัย 3 ประการ:
+              <br>1. <strong>ระยะเวลาคงเหลือก่อนถึงกำหนดส่ง</strong> (45%)
+              <br>2. <strong>น้ำหนักคะแนนของงานชิ้นนั้น (% Weight)</strong> (35%)
+              <br>3. <strong>ระดับความยากของเนื้อหา (Difficulty Scale 1-5)</strong> (20%)
+            </p>
+            <div style="background: var(--bg-secondary); padding: 16px; border-radius: 12px; border: 1px solid var(--bg-glass-border);">
+              <div style="font-size: 0.85rem; font-weight: 700; color: var(--primary); margin-bottom: 6px;">
+                <i class="fa-solid fa-lightbulb"></i> คำแนะนำสำหรับนักศึกษา:
+              </div>
+              <div style="font-size: 0.82rem; color: var(--text-secondary);">
+                คุณควรให้ความสำคัญสูงสุดแก่การทำงานอันดับที่ 1 ก่อน เนื่องจากมีกำหนดส่งกระชั้นชิดและมีผลต่อเกรดเฉลี่ยรายวิชาสูงสุด
+              </div>
+            </div>
+          </div>
+
+          <div class="analytics-card">
+            <h3 style="font-size: 1.1rem; margin-bottom: 16px;">
+              <i class="fa-solid fa-list-ol" style="color: var(--primary);"></i> ลำดับงานที่ควรเริ่มทำก่อน (Priority Ranking)
+            </h3>
+            <div class="ai-priority-list" id="ai-priority-list">
+              <!-- Rendered dynamically -->
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= TAB 5: GROUP COLLABORATION ================= -->
+      <section class="tab-pane" id="tab-collaboration">
+        <div class="section-header">
+          <div class="section-title">
+            <h2><i class="fa-solid fa-users" style="color: var(--primary);"></i> ระบบติดตามและแบ่งงานกลุ่ม (Group Work Collaboration)</h2>
+            <p>ติดตามความคืบหน้า รายชื่อสมาชิกในทีม และงานย่อย (Subtasks)</p>
+          </div>
+        </div>
+
+        <div id="group-tasks-container">
+          <!-- Rendered dynamically -->
+        </div>
+      </section>
+
+      <!-- ================= TAB 6: SCALABILITY SHOWCASE ================= -->
+      <section class="tab-pane" id="tab-scalability">
+        <div class="section-header">
+          <div class="section-title">
+            <h2><i class="fa-solid fa-rocket" style="color: var(--accent);"></i> การพัฒนาต่อยอดในอนาคต (Scalability & Future Roadmap)</h2>
+            <p>ข้อเสนอแนะและฟีเจอร์ระดับสูงสำหรับขยายผลการใช้งานในระดับสถาบันการศึกษา (สำหรับนำเสนออาจารย์)</p>
+          </div>
+        </div>
+
+        <div class="scalability-grid">
+          <div class="feature-card">
+            <div class="feature-icon"><i class="fa-solid fa-diagram-project"></i></div>
+            <h3>1. Auto-Sync MS Teams & Google Classroom</h3>
+            <p style="font-size: 0.88rem; color: var(--text-secondary); margin-top: 8px;">
+              เชื่อมต่อกับระบบ LMS ของมหาวิทยาลัย ดึงการบ้านและกำหนดส่งอัตโนมัติผ่าน OAuth2 API ไม่ต้องกรอกด้วยตนเอง
+            </p>
+            <div style="margin-top: 14px; padding: 10px; background: var(--bg-secondary); border-radius: 8px; font-size: 0.8rem; display: flex; align-items: center; justify-content: space-between;">
+              <span>Mock Live Integration Status</span>
+              <span style="color: var(--status-completed); font-weight: 700;">● Connected</span>
+            </div>
+          </div>
+
+          <div class="feature-card">
+            <div class="feature-icon"><i class="fa-solid fa-robot"></i></div>
+            <h3>2. AI Learning Assistant & Chatbot</h3>
+            <p style="font-size: 0.88rem; color: var(--text-secondary); margin-top: 8px;">
+              ผู้ช่วย AI ช่วยวิเคราะห์ไฟล์โจทย์การบ้าน สรุปขั้นตอนการทำ และประมาณเวลาที่ต้องใช้ในแต่ละขั้นตอน
+            </p>
+          </div>
+
+          <div class="feature-card">
+            <div class="feature-icon"><i class="fa-solid fa-bell-concierge"></i></div>
+            <h3>3. Multi-Channel Notifications</h3>
+            <p style="font-size: 0.88rem; color: var(--text-secondary); margin-top: 8px;">
+              ส่งการแจ้งเตือนผ่าน LINE Notify, Telegram Bot หรือ Push Notification มือถือก่อนถึงเดดไลน์ 24 ชม. และ 2 ชม.
+            </p>
+          </div>
+
+          <div class="feature-card">
+            <div class="feature-icon"><i class="fa-solid fa-chart-line"></i></div>
+            <h3>4. Academic Analytics for Advisors</h3>
+            <p style="font-size: 0.88rem; color: var(--text-secondary); margin-top: 8px;">
+              Dashboard วิเคราะห์ภาระงานของนักศึกษาในแต่ละสัปดาห์ ช่วยให้อาจารย์วางแผนการสั่งการบ้านไม่ให้กระจุกตัว
+            </p>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- Task Modal Form (Add & Edit) -->
+  <div class="modal-overlay" id="task-modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 id="modal-title">เพิ่มการบ้าน / งานใหม่</h3>
+        <button class="btn-close-modal" onclick="app.closeModal()"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+
+      <form id="task-form" onsubmit="app.saveTaskFromForm(event)">
+        <input type="hidden" id="task-id">
+
+        <div class="form-group">
+          <label for="input-title">ชื่องาน / การบ้าน *</label>
+          <input type="text" id="input-title" class="form-control" required placeholder="เช่น ออกแบบ ER Diagram วิชา Database">
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="input-subject">รายวิชา *</label>
+            <input type="text" id="input-subject" class="form-control" required placeholder="เช่น Database Systems">
+          </div>
+          <div class="form-group">
+            <label for="input-type">ประเภทงาน *</label>
+            <select id="input-type" class="form-control">
+              <option value="individual">งานเดี่ยว</option>
+              <option value="group">งานกลุ่ม</option>
+              <option value="project">โปรเจกต์</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="input-duedate">กำหนดส่ง (Date) *</label>
+            <input type="date" id="input-duedate" class="form-control" required>
+          </div>
+          <div class="form-group">
+            <label for="input-duetime">เวลาส่ง (Time)</label>
+            <input type="time" id="input-duetime" class="form-control" value="23:59">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="input-status">สถานะงาน *</label>
+            <select id="input-status" class="form-control">
+              <option value="to-do">ยังไม่ได้เริ่ม (To Do)</option>
+              <option value="in-progress">กำลังทำ (In Progress)</option>
+              <option value="completed">ส่งแล้ว (Completed)</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="input-priority">ระดับความสำคัญ</label>
+            <select id="input-priority" class="form-control">
+              <option value="low">ปกติ (Low)</option>
+              <option value="medium" selected>สำคัญ (Medium)</option>
+              <option value="high">ด่วนที่สุด / น้ำหนักสูง (High)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="input-weight">น้ำหนักคะแนน (% Weight)</label>
+          <input type="number" id="input-weight" class="form-control" min="1" max="100" value="10">
+        </div>
+
+        <div class="form-group">
+          <label for="input-desc">รายละเอียดเพิ่มเติม</label>
+          <textarea id="input-desc" class="form-control" rows="3" placeholder="เช่น ขั้นตอนการทำ ข้อกำหนดของอาจารย์..."></textarea>
+        </div>
+
+        <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 20px;">
+          <button type="button" class="btn-secondary" onclick="app.closeModal()">ยกเลิก</button>
+          <button type="submit" class="btn-primary"><i class="fa-solid fa-floppy-disk"></i> บันทึกข้อมูล</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div class="toast-container" id="toast-container"></div>
+
+  <!-- Main JavaScript -->
+  <script src="js/app.js"></script>
+</body>
+</html>
