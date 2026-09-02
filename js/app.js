@@ -466,31 +466,32 @@ class AssignmentApp {
         const daysLeft = Math.max(0.1, (due - now) / (1000 * 60 * 60 * 24));
         const timeFactor = Math.max(0, 100 - (daysLeft * 10)); // Closer due date -> higher score
 
-        const urgencyScore = Math.round((t.weight * 0.35) + (t.difficulty * 12) + (timeFactor * 0.5));
+        const rawScore = Math.round((t.weight * 0.35) + (t.difficulty * 12) + (timeFactor * 0.45));
+        const urgencyScore = Math.min(99, Math.max(10, rawScore));
 
         return { ...t, urgencyScore, daysLeft: Math.round(daysLeft * 10) / 10 };
       })
       .sort((a, b) => b.urgencyScore - a.urgencyScore);
 
     if (scoredTasks.length === 0) {
-      container.innerHTML = '<div style="padding: 20px; text-align: center; color: var(--text-muted);">ไม่มีงานที่ค้างส่งในขณะนี้ 🎉</div>';
+      container.innerHTML = '<div style="padding: 24px; text-align: center; color: var(--text-muted);">ไม่มีงานที่ค้างส่งในขณะนี้ 🎉</div>';
       return;
     }
 
     container.innerHTML = scoredTasks.map((t, idx) => `
       <div class="ai-item">
-        <div style="display: flex; align-items: center; gap: 14px;">
+        <div style="display: flex; align-items: center; gap: 16px;">
           <div class="ai-rank ${idx === 0 ? 'top1' : ''}">${idx + 1}</div>
           <div>
-            <div style="font-weight: 700;">${t.title}</div>
-            <div style="font-size: 0.8rem; color: var(--text-secondary);">
-              วิชา: ${t.subject} | เดดไลน์: เหลืออีก <strong>${t.daysLeft} วัน</strong> | น้ำหนักคะแนน: ${t.weight}%
+            <div style="font-weight: 700; font-size: 1.05rem;">${t.title}</div>
+            <div style="font-size: 0.82rem; color: var(--text-secondary); margin-top: 4px;">
+              วิชา: <strong style="color: var(--cyan-neon);">${t.subject}</strong> | เดดไลน์: เหลืออีก <strong style="color: ${t.daysLeft <= 2 ? 'var(--status-urgent)' : 'var(--status-pending)'};">${t.daysLeft} วัน</strong> | น้ำหนักคะแนน: ${t.weight}%
             </div>
           </div>
         </div>
         <div style="text-align: right;">
-          <div style="font-size: 0.75rem; color: var(--text-muted);">AI Urgency Index</div>
-          <div style="font-size: 1.2rem; font-weight: 800; color: var(--primary);">${t.urgencyScore} / 100</div>
+          <div style="font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;">AI Urgency Index</div>
+          <div style="font-size: 1.3rem; font-weight: 800; color: ${idx === 0 ? 'var(--status-urgent)' : 'var(--primary)'};">${t.urgencyScore} / 100</div>
         </div>
       </div>
     `).join('');
