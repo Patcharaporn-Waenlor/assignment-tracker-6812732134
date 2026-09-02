@@ -16,18 +16,18 @@ create table if not exists public.tasks (
 -- Enable Row Level Security (RLS)
 alter table public.tasks enable row level security;
 
--- Public Policy for read/write access (Demo & Production Assignment Tracker)
+-- Public Policy for read/write access
 create policy "Allow public full access to tasks"
   on public.tasks
   for all
   using (true)
   with check (true);
 
--- Initial Mock Data Insert
+-- Sample Data Insert
 insert into public.tasks (title, subject, description, due_date, status)
 values
-  ('ออกแบบ ER-Diagram & Relational Schema', 'Database Systems', 'ออกแบบ 3NF และเขียน SQL Script สำหรับระบบห้องพยาบาล', CURRENT_DATE + INTERVAL '1 day', 'in_progress'),
-  ('พัฒนา Frontend ด้วย Next.js & Tailwind', 'Web Development', 'สร้างระบบติดตามการบ้านและเชื่อมต่อกับ Supabase', CURRENT_DATE + INTERVAL '3 days', 'in_progress'),
-  ('จัดทำเอกสาร Software Requirement Specification', 'Software Engineering', 'รวบรวม User Stories, Use Case Diagrams และ Non-functional Requirements', CURRENT_DATE + INTERVAL '5 days', 'not_started'),
-  ('ทำแบบฝึกหัด Decision Tree & Entropy', 'AI & Machine Learning', 'คำนวณ Information Gain ด้วยมือและเขียน Python Code', CURRENT_DATE + INTERVAL '8 days', 'not_started'),
-  ('ส่งสไลด์นำเสนอวิชาการสื่อสารเทคโนโลยี', 'Tech Communication', 'ทำสไลด์ 10 หน้า หัวข้อ Cloud Architecture Trends', CURRENT_DATE - INTERVAL '2 days', 'done');
+  ('ออกแบบ ER-Diagram & Database Schema', 'Database Systems', 'ออกแบบ Normalization (3NF) และเขียน DDL สำหรับระบบห้องพยาบาล', CURRENT_DATE + INTERVAL '1 day', 'in_progress'),
+  ('พัฒนา Web Dashboard ด้วย HTML/CSS/JS', 'Web Development', 'สร้างระบบติดตามการบ้านพร้อมตัวกรองค้นหาและแบนเนอร์เตือนเดดไลน์', CURRENT_DATE + INTERVAL '3 days', 'in_progress'),
+  ('จัดทำเอกสาร Software Requirement Specification', 'Software Engineering', 'เขียน Use Case Diagrams, Functional & Non-functional Requirements', CURRENT_DATE + INTERVAL '5 days', 'not_started'),
+  ('ทำแบบฝึกหัด Decision Tree & Entropy', 'AI & Data Science', 'คำนวณ Information Gain ด้วยมือและเขียน Python Code', CURRENT_DATE + INTERVAL '8 days', 'not_started'),
+  ('ส่งสไลด์นำเสนอวิชาการสื่อสารทางเทคโนโลยี', 'Tech Communication', 'จัดทำสไลด์ 10 หน้า หัวข้อ Cloud Architecture Trends 2026', CURRENT_DATE - INTERVAL '2 days', 'done');
