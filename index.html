@@ -222,12 +222,24 @@
           <label for="form-desc">รายละเอียดเพิ่มเติม</label>
           <textarea id="form-desc" class="form-control" rows="3" placeholder="ระบุรายละเอียดเพิ่มเติม หรือข้อกำหนดของอาจารย์..."></textarea>
         </div>
-
         <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 24px;">
           <button type="button" class="btn-secondary" onclick="app.closeModal()">ยกเลิก</button>
           <button type="submit" class="btn-primary"><i class="fa-regular fa-floppy-disk"></i> บันทึกข้อมูล</button>
         </div>
       </form>
+    </div>
+  </div>
+
+  <!-- Day Tasks Detail Modal -->
+  <div class="modal-backdrop" id="day-tasks-modal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 id="day-modal-title"><i class="fa-regular fa-calendar-days"></i> รายการการบ้านประจำวัน</h3>
+        <button class="modal-close" onclick="app.closeDayModal()"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div id="day-modal-content">
+        <!-- Rendered by JS -->
+      </div>
     </div>
   </div>
 

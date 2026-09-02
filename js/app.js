@@ -316,7 +316,7 @@ class HomeworkTrackerApp {
     }).join('');
   }
 
-  // Academic Calendar Renderer
+  // Academic Calendar Renderer with Colored Dots & Click Handler
   renderCalendar() {
     const grid = document.getElementById('calendar-grid-container');
     const monthLabel = document.getElementById('calendar-month-label');
@@ -343,7 +343,7 @@ class HomeworkTrackerApp {
 
     // Empty lead slots
     for (let i = 0; i < firstDay; i++) {
-      html += `<div class="calendar-day-cell empty" style="opacity: 0.3; background: transparent; border: none;"></div>`;
+      html += `<div class="calendar-day-cell empty" style="opacity: 0.2; background: transparent; border: none; cursor: default;"></div>`;
     }
 
     const todayStr = new Date().toISOString().split('T')[0];
@@ -354,18 +354,30 @@ class HomeworkTrackerApp {
       const isToday = dateStr === todayStr;
       
       const dayTasks = this.tasks.filter(t => t.due_date === dateStr);
+      const hasTasks = dayTasks.length > 0;
+
+      // Small Colored Dots
+      const dotsHTML = dayTasks.map(t => {
+        const effStatus = this.getEffectiveStatus(t);
+        return `<span class="calendar-dot ${effStatus}" title="${t.title}"></span>`;
+      }).join('');
+
+      // Preview Task Pills (Up to 2)
+      const previewPillsHTML = dayTasks.slice(0, 2).map(t => {
+        const effStatus = this.getEffectiveStatus(t);
+        return `<div class="calendar-task-pill ${effStatus}">${t.title}</div>`;
+      }).join('');
 
       html += `
-        <div class="calendar-day-cell ${isToday ? 'today' : ''}">
-          <div class="calendar-day-number">${d}</div>
-          ${dayTasks.map(t => {
-            const effStatus = this.getEffectiveStatus(t);
-            return `
-              <div class="calendar-task-pill ${effStatus}" onclick="app.openEditModal('${t.id}')" title="${t.title} (${t.subject})">
-                ${t.title}
-              </div>
-            `;
-          }).join('')}
+        <div class="calendar-day-cell ${isToday ? 'today' : ''} ${hasTasks ? 'has-tasks' : ''}" onclick="app.openDayTasksModal('${dateStr}')" title="คลิกเพื่อดูงานประจำวันที่ ${d}">
+          <div class="calendar-day-top">
+            <span class="calendar-day-number">${d}</span>
+            ${hasTasks ? `<span class="calendar-task-count-badge">${dayTasks.length} งาน</span>` : ''}
+          </div>
+          <div class="calendar-tasks-preview">
+            ${previewPillsHTML}
+          </div>
+          ${hasTasks ? `<div class="calendar-dots-bar">${dotsHTML}</div>` : ''}
         </div>
       `;
     }
@@ -376,6 +388,86 @@ class HomeworkTrackerApp {
   navigateCalendar(delta) {
     this.currentCalendarDate.setMonth(this.currentCalendarDate.getMonth() + delta);
     this.renderCalendar();
+  }
+
+  // Open Modal for Tasks of a Specific Day
+  openDayTasksModal(dateStr) {
+    const dayTasks = this.tasks.filter(t => t.due_date === dateStr);
+    
+    const [y, m, d] = dateStr.split('-');
+    const thaiMonths = ["มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน", "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม"];
+    const formattedDate = `${parseInt(d)} ${thaiMonths[parseInt(m) - 1]} ${parseInt(y) + 543}`;
+
+    const titleEl = document.getElementById('day-modal-title');
+    const contentEl = document.getElementById('day-modal-content');
+    if (!titleEl || !contentEl) return;
+
+    titleEl.innerHTML = `<i class="fa-regular fa-calendar-days"></i> กำหนดส่งวันที่ ${formattedDate}`;
+
+    if (dayTasks.length === 0) {
+      contentEl.innerHTML = `
+        <div class="empty-state" style="padding: 32px 16px;">
+          <i class="fa-regular fa-calendar-check" style="font-size: 2rem;"></i>
+          <p style="margin-bottom: 16px;">ไม่มีงานที่มีกำหนดส่งในวันที่ ${formattedDate}</p>
+          <button class="btn-primary" onclick="app.closeDayModal(); app.openAddModalWithDate('${dateStr}');">
+            <i class="fa-solid fa-plus"></i> เพิ่มการบ้านในวันนี้
+          </button>
+        </div>
+      `;
+    } else {
+      contentEl.innerHTML = `
+        <div style="display: flex; flex-direction: column; gap: 12px; max-height: 60vh; overflow-y: auto; padding-right: 4px;">
+          ${dayTasks.map(t => {
+            const effStatus = this.getEffectiveStatus(t);
+            let badgeHTML = '';
+            if (effStatus === 'done') badgeHTML = `<span class="status-badge done">ส่งแล้ว</span>`;
+            else if (effStatus === 'overdue') badgeHTML = `<span class="status-badge overdue">เลยกำหนดส่ง</span>`;
+            else if (effStatus === 'in_progress') badgeHTML = `<span class="status-badge in_progress">กำลังทำ</span>`;
+            else badgeHTML = `<span class="status-badge not_started">ยังไม่เริ่ม</span>`;
+
+            return `
+              <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 14px 16px;">
+                <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 6px;">
+                  <div style="display: flex; align-items: center; gap: 8px;">
+                    <span class="subject-badge">${t.subject}</span>
+                    ${this.renderTaskTypeTag(t.task_type)}
+                  </div>
+                  ${badgeHTML}
+                </div>
+                <div style="font-weight: 700; color: #0f172a; margin-bottom: 4px;">${t.title}</div>
+                <div style="font-size: 0.85rem; color: #475569; margin-bottom: 10px;">${t.description || 'ไม่มีรายละเอียดเพิ่มเติม'}</div>
+                <div style="display: flex; align-items: center; justify-content: space-between; pt: 8px; border-top: 1px solid #e2e8f0;">
+                  <select class="status-select" onchange="app.updateTaskStatus('${t.id}', this.value); app.openDayTasksModal('${dateStr}');">
+                    <option value="not_started" ${t.status === 'not_started' ? 'selected' : ''}>ยังไม่เริ่ม</option>
+                    <option value="in_progress" ${t.status === 'in_progress' ? 'selected' : ''}>กำลังทำ</option>
+                    <option value="done" ${t.status === 'done' ? 'selected' : ''}>ส่งแล้ว</option>
+                  </select>
+                  <div>
+                    <button class="icon-btn" title="แก้ไข" onclick="app.closeDayModal(); app.openEditModal('${t.id}');">
+                      <i class="fa-regular fa-pen-to-square"></i>
+                    </button>
+                    <button class="icon-btn delete" title="ลบ" onclick="app.deleteTask('${t.id}'); app.openDayTasksModal('${dateStr}');">
+                      <i class="fa-regular fa-trash-can"></i>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            `;
+          }).join('')}
+        </div>
+      `;
+    }
+
+    document.getElementById('day-tasks-modal')?.classList.add('active');
+  }
+
+  closeDayModal() {
+    document.getElementById('day-tasks-modal')?.classList.remove('active');
+  }
+
+  openAddModalWithDate(dateStr) {
+    this.openAddModal();
+    document.getElementById('form-duedate').value = dateStr;
   }
 
   // Update Status Action
