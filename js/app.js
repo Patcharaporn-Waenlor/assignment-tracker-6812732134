@@ -1,6 +1,7 @@
 /* ==========================================================================
    MINIMALIST ASSIGNMENT TRACKER APPLICATION LOGIC
-   Handles Task Storage, Overdue Calculation, Task Types, Calendar & Modals
+   Handles Task Storage, Overdue Calculation, Task Types, Validation,
+   Automatic Date Sorting, Empty State, Calendar & Modals
    ========================================================================== */
 
 const INITIAL_DEMO_TASKS = [
@@ -228,9 +229,9 @@ class HomeworkTrackerApp {
     filterSelect.value = currentVal;
   }
 
-  // Filter Tasks Algorithm
+  // Filter & Automatic Sorting Algorithm (Feature 5: Sort by due_date ascending)
   getFilteredTasks() {
-    return this.tasks.filter(t => {
+    const filtered = this.tasks.filter(t => {
       const query = this.searchQuery.toLowerCase();
       const matchSearch = t.title.toLowerCase().includes(query) ||
                           t.subject.toLowerCase().includes(query) ||
@@ -242,6 +243,9 @@ class HomeworkTrackerApp {
 
       return matchSearch && matchStatus && matchSubject;
     });
+
+    // Feature 5: Automatically sort by due_date from closest/overdue (earliest date) to latest
+    return filtered.sort((a, b) => a.due_date.localeCompare(b.due_date));
   }
 
   // Render Task Type Badge Tag
@@ -251,18 +255,19 @@ class HomeworkTrackerApp {
     return `<span class="task-type-tag type-${type || 'individual'}"><i class="fa-solid ${icon}"></i> ${label}</span>`;
   }
 
-  // Render Tasks List Table/Cards
+  // Render Tasks List Table/Cards (Feature 6: Clean Empty State)
   renderTasks() {
     const listContainer = document.getElementById('task-list-container');
     if (!listContainer) return;
 
     const filtered = this.getFilteredTasks();
 
+    // Feature 6: Empty state when no tasks match filter/search
     if (filtered.length === 0) {
       listContainer.innerHTML = `
         <div class="empty-state">
           <i class="fa-regular fa-folder-open"></i>
-          <p>ไม่พบรายการการบ้านที่ตรงกับเงื่อนไขที่เลือก</p>
+          <p>ไม่พบงานที่ค้นหา</p>
         </div>
       `;
       return;
@@ -316,7 +321,7 @@ class HomeworkTrackerApp {
     }).join('');
   }
 
-  // Academic Calendar Renderer with Colored Dots & Click Handler
+  // Academic Calendar Renderer
   renderCalendar() {
     const grid = document.getElementById('calendar-grid-container');
     const monthLabel = document.getElementById('calendar-month-label');
@@ -480,6 +485,14 @@ class HomeworkTrackerApp {
     this.renderAll();
   }
 
+  // Reset Title Validation Error UI
+  resetFormValidation() {
+    const errorMsg = document.getElementById('title-error-msg');
+    const titleInput = document.getElementById('form-title');
+    if (errorMsg) errorMsg.style.display = 'none';
+    if (titleInput) titleInput.style.borderColor = '';
+  }
+
   // Open Add Modal
   openAddModal() {
     this.editingTaskId = null;
@@ -488,6 +501,7 @@ class HomeworkTrackerApp {
     document.getElementById('form-id').value = '';
     document.getElementById('form-type').value = 'individual';
     document.getElementById('form-duedate').value = new Date(Date.now() + 86400000).toISOString().split('T')[0];
+    this.resetFormValidation();
     document.getElementById('task-modal').classList.add('active');
   }
 
@@ -506,20 +520,36 @@ class HomeworkTrackerApp {
     document.getElementById('form-status').value = task.status;
     document.getElementById('form-desc').value = task.description || '';
 
+    this.resetFormValidation();
     document.getElementById('task-modal').classList.add('active');
   }
 
   // Close Modal
   closeModal() {
     document.getElementById('task-modal').classList.remove('active');
+    this.resetFormValidation();
   }
 
-  // Save Task Form Submission
+  // Feature 4: Save Task Form Submission with Validation
   saveTaskForm(event) {
     event.preventDefault();
 
-    const title = document.getElementById('form-title').value;
-    const subject = document.getElementById('form-subject').value;
+    const titleInput = document.getElementById('form-title');
+    const title = titleInput.value.trim();
+    const errorMsg = document.getElementById('title-error-msg');
+
+    // Feature 4: Validation - Cannot save if title is empty or blank spaces
+    if (!title) {
+      if (errorMsg) errorMsg.style.display = 'block';
+      titleInput.style.borderColor = '#ef4444';
+      titleInput.focus();
+      return;
+    } else {
+      if (errorMsg) errorMsg.style.display = 'none';
+      titleInput.style.borderColor = '';
+    }
+
+    const subject = document.getElementById('form-subject').value.trim() || 'ทั่วไป';
     const task_type = document.getElementById('form-type').value;
     const due_date = document.getElementById('form-duedate').value;
     const status = document.getElementById('form-status').value;
@@ -556,9 +586,12 @@ class HomeworkTrackerApp {
     this.renderAll();
   }
 
-  // Delete Task
+  // Feature 4: Delete Task with Confirmation Popup
   deleteTask(id) {
-    if (confirm('คุณต้องการลบการบ้านชิ้นนี้ใช่หรือไม่?')) {
+    const task = this.tasks.find(t => t.id === id);
+    if (!task) return;
+
+    if (confirm(`ยืนยันลบงาน "${task.title}" หรือไม่?`)) {
       this.tasks = this.tasks.filter(t => t.id !== id);
       this.saveTasks();
       this.renderAll();
@@ -570,6 +603,10 @@ class HomeworkTrackerApp {
     document.getElementById('search-input')?.addEventListener('input', (e) => {
       this.searchQuery = e.target.value;
       this.renderTasks();
+    });
+
+    document.getElementById('form-title')?.addEventListener('input', () => {
+      this.resetFormValidation();
     });
 
     document.getElementById('filter-subject')?.addEventListener('change', (e) => {
