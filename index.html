@@ -53,7 +53,7 @@
       <p>จัดการภาระการเรียน ตรวจสอบเดดไลน์ และติดตามสถานะงานส่งทุกรายวิชาในที่เดียว</p>
     </div>
 
-    <!-- Dashboard Summary Stat Cards -->
+    <!-- Dashboard Summary Stat Cards (5 Cards) -->
     <div class="dashboard-grid">
       <div class="stat-card total-border" onclick="app.filterByStatCard('all')" title="คลิกเพื่อดูกระดานงานทั้งหมด">
         <div class="stat-info">
@@ -94,6 +94,16 @@
           <i class="fa-solid fa-triangle-exclamation"></i>
         </div>
       </div>
+
+      <div class="stat-card overdue-border" onclick="app.filterByStatCard('overdue')" title="คลิกเพื่อดูกรองเฉพาะงานที่เลยกำหนดส่ง">
+        <div class="stat-info">
+          <div class="stat-label">เลยกำหนดส่ง (Overdue)</div>
+          <div class="stat-value" id="stat-overdue">0</div>
+        </div>
+        <div class="stat-icon overdue">
+          <i class="fa-solid fa-clock-rotate-left"></i>
+        </div>
+      </div>
     </div>
 
     <!-- Urgent Deadline Alert Banner -->
@@ -116,6 +126,7 @@
           <button class="pill-btn" data-status="not_started">ยังไม่เริ่ม</button>
           <button class="pill-btn" data-status="in_progress">กำลังทำ</button>
           <button class="pill-btn" data-status="done">ส่งแล้ว</button>
+          <button class="pill-btn" data-status="overdue">เลยกำหนดส่ง</button>
         </div>
 
         <!-- View Mode Switcher -->
@@ -182,18 +193,29 @@
           </div>
 
           <div class="form-group">
-            <label for="form-duedate">กำหนดส่ง (Due Date) *</label>
-            <input type="date" id="form-duedate" class="form-control" required>
+            <label for="form-type">ประเภทงาน *</label>
+            <select id="form-type" class="form-control">
+              <option value="individual">งานเดี่ยว</option>
+              <option value="group">งานกลุ่ม</option>
+              <option value="project">โปรเจกต์</option>
+            </select>
           </div>
         </div>
 
-        <div class="form-group">
-          <label for="form-status">สถานะเริ่มต้น *</label>
-          <select id="form-status" class="form-control">
-            <option value="not_started">ยังไม่เริ่ม (Not Started)</option>
-            <option value="in_progress">กำลังทำ (In Progress)</option>
-            <option value="done">ส่งแล้ว (Done)</option>
-          </select>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="form-duedate">กำหนดส่ง (Due Date) *</label>
+            <input type="date" id="form-duedate" class="form-control" required>
+          </div>
+
+          <div class="form-group">
+            <label for="form-status">สถานะเริ่มต้น *</label>
+            <select id="form-status" class="form-control">
+              <option value="not_started">ยังไม่เริ่ม (Not Started)</option>
+              <option value="in_progress">กำลังทำ (In Progress)</option>
+              <option value="done">ส่งแล้ว (Done)</option>
+            </select>
+          </div>
         </div>
 
         <div class="form-group">

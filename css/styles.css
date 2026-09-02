@@ -2,7 +2,7 @@
    ELEGANT LIGHT DASHBOARD DESIGN SYSTEM
    Homework & Assignment Tracker
    Theme: Bright Slate & Deep Navy Header
-   Status Badges: Done (Emerald #10b981), In Progress (Amber #f59e0b), Not Started (Rose #ef4444)
+   Status Badges: Done (Emerald #10b981), In Progress (Amber #f59e0b), Not Started (Rose #ef4444), Overdue (Dark Red #991b1b)
    Font: Prompt (Google Fonts)
    ========================================================================== */
 
@@ -41,6 +41,10 @@
   --badge-notstarted-bg: #ffe4e6;
   --badge-notstarted-text: #9f1239;
   --badge-notstarted-border: #fecdd3;
+  
+  --badge-overdue-bg: #fee2e2;
+  --badge-overdue-text: #991b1b;
+  --badge-overdue-border: #fca5a5;
   
   --shadow-sm: 0 2px 4px rgba(15, 23, 42, 0.04);
   --shadow-md: 0 8px 16px -2px rgba(15, 23, 42, 0.06), 0 4px 6px -1px rgba(15, 23, 42, 0.04);
@@ -93,7 +97,7 @@ body {
 .brand-wrapper {
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: 12px;
 }
 
 .brand-icon {
@@ -222,21 +226,27 @@ body {
   margin-top: 4px;
 }
 
-/* Dashboard Summary Cards Grid */
+/* Dashboard Summary Cards Grid (5 Cards) */
 .dashboard-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 20px;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 16px;
   margin-bottom: 28px;
 }
 
-@media (max-width: 900px) {
+@media (max-width: 1024px) {
+  .dashboard-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (max-width: 640px) {
   .dashboard-grid {
     grid-template-columns: repeat(2, 1fr);
   }
 }
 
-@media (max-width: 500px) {
+@media (max-width: 480px) {
   .dashboard-grid {
     grid-template-columns: 1fr;
   }
@@ -246,7 +256,7 @@ body {
   background: var(--bg-card);
   border: 1px solid var(--border-color);
   border-radius: 16px;
-  padding: 22px 24px;
+  padding: 20px 22px;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -263,8 +273,6 @@ body {
   box-shadow: var(--shadow-lg);
   border-color: var(--primary);
 }
-  box-shadow: var(--shadow-lg);
-}
 
 .stat-card::before {
   content: '';
@@ -279,16 +287,17 @@ body {
 .stat-card.done-border::before { background-color: #10b981; }
 .stat-card.progress-border::before { background-color: #f59e0b; }
 .stat-card.pending-border::before { background-color: #ef4444; }
+.stat-card.overdue-border::before { background-color: #991b1b; }
 
 .stat-info .stat-label {
-  font-size: 0.85rem;
+  font-size: 0.82rem;
   font-weight: 600;
   color: var(--text-secondary);
   margin-bottom: 6px;
 }
 
 .stat-info .stat-value {
-  font-size: 2.2rem;
+  font-size: 2rem;
   font-weight: 800;
   color: var(--text-main);
   line-height: 1;
@@ -296,19 +305,20 @@ body {
 }
 
 .stat-icon {
-  width: 52px;
-  height: 52px;
+  width: 48px;
+  height: 48px;
   border-radius: 14px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.4rem;
+  font-size: 1.3rem;
 }
 
 .stat-icon.total { background-color: #eff6ff; color: #2563eb; }
 .stat-icon.done { background-color: var(--badge-done-bg); color: var(--badge-done-text); }
 .stat-icon.progress { background-color: var(--badge-progress-bg); color: var(--badge-progress-text); }
 .stat-icon.pending { background-color: var(--badge-notstarted-bg); color: var(--badge-notstarted-text); }
+.stat-icon.overdue { background-color: var(--badge-overdue-bg); color: var(--badge-overdue-text); }
 
 /* Urgent Deadline Banner */
 .urgent-banner {
@@ -409,8 +419,6 @@ body {
 
 .search-field input:focus {
   border-color: var(--border-focus);
-  background-color: #ffffff;
-  box-shadow: 0 0 10px rgba(37, 99, 235, 0.15);
 }
 
 .filter-group {
@@ -530,8 +538,9 @@ body {
 .task-header-row {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
   margin-bottom: 8px;
+  flex-wrap: wrap;
 }
 
 .subject-badge {
@@ -545,6 +554,36 @@ body {
   text-transform: uppercase;
 }
 
+/* Task Type Tag Pill (Subtle & Harmonious) */
+.task-type-tag {
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 2px 9px;
+  border-radius: 6px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.task-type-tag.type-individual {
+  background-color: #f0f9ff;
+  color: #0369a1;
+  border: 1px solid #bae6fd;
+}
+
+.task-type-tag.type-group {
+  background-color: #f5f3ff;
+  color: #6d28d9;
+  border: 1px solid #ddd6fe;
+}
+
+.task-type-tag.type-project {
+  background-color: #fff7ed;
+  color: #c2410c;
+  border: 1px solid #ffedd5;
+}
+
+/* Status Badges */
 .status-badge {
   font-size: 0.78rem;
   font-weight: 700;
@@ -571,6 +610,13 @@ body {
   background-color: var(--badge-notstarted-bg);
   color: var(--badge-notstarted-text);
   border: 1px solid var(--badge-notstarted-border);
+}
+
+.status-badge.overdue {
+  background-color: var(--badge-overdue-bg);
+  color: var(--badge-overdue-text);
+  border: 1px solid var(--badge-overdue-border);
+  font-weight: 800;
 }
 
 .task-title {
@@ -740,6 +786,13 @@ body {
   background-color: var(--badge-notstarted-bg);
   color: var(--badge-notstarted-text);
   border: 1px solid var(--badge-notstarted-border);
+}
+
+.calendar-task-pill.overdue {
+  background-color: var(--badge-overdue-bg);
+  color: var(--badge-overdue-text);
+  border: 1px solid var(--badge-overdue-border);
+  font-weight: 800;
 }
 
 /* Modal Form */

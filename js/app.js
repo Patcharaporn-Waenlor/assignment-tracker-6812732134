@@ -1,6 +1,6 @@
 /* ==========================================================================
    MINIMALIST ASSIGNMENT TRACKER APPLICATION LOGIC
-   Handles Task Storage, Live Header Clock, Calendar View, Filters & Form Modals
+   Handles Task Storage, Overdue Calculation, Task Types, Calendar & Modals
    ========================================================================== */
 
 const INITIAL_DEMO_TASKS = [
@@ -8,6 +8,7 @@ const INITIAL_DEMO_TASKS = [
     id: "task-1",
     title: "ออกแบบ ER-Diagram & Database Schema",
     subject: "Database Systems",
+    task_type: "individual", // individual | group | project
     description: "ออกแบบ Normalization (3NF) และเขียน DDL สำหรับระบบห้องพยาบาลมหาวิทยาลัย",
     due_date: new Date(Date.now() + 1 * 86400000).toISOString().split('T')[0],
     status: "in_progress"
@@ -16,6 +17,7 @@ const INITIAL_DEMO_TASKS = [
     id: "task-2",
     title: "พัฒนา Web Dashboard ด้วย HTML/CSS/JS",
     subject: "Web Development",
+    task_type: "project",
     description: "สร้างระบบติดตามการบ้านพร้อมตัวกรองค้นหาและแบนเนอร์เตือนเดดไลน์",
     due_date: new Date(Date.now() + 3 * 86400000).toISOString().split('T')[0],
     status: "in_progress"
@@ -24,6 +26,7 @@ const INITIAL_DEMO_TASKS = [
     id: "task-3",
     title: "จัดทำเอกสาร Software Requirement Specification (SRS)",
     subject: "Software Engineering",
+    task_type: "group",
     description: "เขียน Use Case Diagrams, Functional & Non-functional Requirements",
     due_date: new Date(Date.now() + 5 * 86400000).toISOString().split('T')[0],
     status: "not_started"
@@ -32,16 +35,18 @@ const INITIAL_DEMO_TASKS = [
     id: "task-4",
     title: "ทำแบบฝึกหัด Decision Tree & Entropy",
     subject: "AI & Data Science",
+    task_type: "individual",
     description: "คำนวณ Information Gain ด้วยมือ และเขียน Python Code ด้วย Scikit-learn",
-    due_date: new Date(Date.now() + 8 * 86400000).toISOString().split('T')[0],
+    due_date: new Date(Date.now() - 1 * 86400000).toISOString().split('T')[0], // Overdue
     status: "not_started"
   },
   {
     id: "task-5",
     title: "ส่งสไลด์นำเสนอวิชาการสื่อสารทางเทคโนโลยี",
     subject: "Tech Communication",
+    task_type: "individual",
     description: "จัดทำสไลด์ 10 หน้า หัวข้อ Cloud Architecture Trends 2026",
-    due_date: new Date(Date.now() - 2 * 86400000).toISOString().split('T')[0],
+    due_date: new Date(Date.now() - 3 * 86400000).toISOString().split('T')[0],
     status: "done"
   }
 ];
@@ -50,7 +55,7 @@ class HomeworkTrackerApp {
   constructor() {
     this.tasks = JSON.parse(localStorage.getItem('assignment_tracker_data')) || INITIAL_DEMO_TASKS;
     this.searchQuery = '';
-    this.statusFilter = 'all'; // all | not_started | in_progress | done
+    this.statusFilter = 'all'; // all | not_started | in_progress | done | overdue
     this.subjectFilter = 'all';
     this.activeView = 'list'; // list | calendar
     this.currentCalendarDate = new Date();
@@ -68,6 +73,18 @@ class HomeworkTrackerApp {
 
   saveTasks() {
     localStorage.setItem('assignment_tracker_data', JSON.stringify(this.tasks));
+  }
+
+  // Calculate Overdue status automatically
+  getEffectiveStatus(task) {
+    if (task.status === 'done') return 'done';
+
+    const todayStr = new Date().toISOString().split('T')[0];
+    if (task.due_date < todayStr) {
+      return 'overdue';
+    }
+
+    return task.status;
   }
 
   // Live Date / Month / Year / Time Header Ticker
@@ -96,17 +113,6 @@ class HomeworkTrackerApp {
     clockEl.innerHTML = `<span class="live-dot"></span><i class="fa-regular fa-clock"></i> วัน${dayName}ที่ ${dayDate} ${monthName} ${yearBE} | ${hours}:${minutes}:${seconds} น.`;
   }
 
-  toggleTheme() {
-    const currentTheme = document.body.getAttribute('data-theme') || 'dark';
-    const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-    document.body.setAttribute('data-theme', newTheme);
-
-    const btnTheme = document.getElementById('btn-toggle-theme');
-    if (btnTheme) {
-      btnTheme.innerHTML = newTheme === 'dark' ? '<i class="fa-solid fa-moon"></i>' : '<i class="fa-solid fa-sun"></i>';
-    }
-  }
-
   renderAll() {
     this.renderStats();
     this.renderUrgentBanner();
@@ -123,41 +129,19 @@ class HomeworkTrackerApp {
     }
   }
 
-  // Filter by Stat Card Click
-  filterByStatCard(status) {
-    this.statusFilter = status;
-    this.activeView = 'list';
-
-    // Update active pill button state UI
-    document.querySelectorAll('.pill-btn').forEach(btn => {
-      if (btn.getAttribute('data-status') === status) {
-        btn.classList.add('active');
-      } else {
-        btn.classList.remove('active');
-      }
-    });
-
-    // Update view toggle active state UI
-    document.getElementById('btn-view-list')?.classList.add('active');
-    document.getElementById('btn-view-calendar')?.classList.remove('active');
-
-    this.renderAll();
-
-    // Smooth scroll down to toolbar & task list
-    document.querySelector('.toolbar')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  }
-
-  // Dashboard Stats Summary
+  // Dashboard Stats Summary (5 Cards)
   renderStats() {
     const total = this.tasks.length;
-    const done = this.tasks.filter(t => t.status === 'done').length;
-    const inProgress = this.tasks.filter(t => t.status === 'in_progress').length;
-    const notStarted = this.tasks.filter(t => t.status === 'not_started').length;
+    const done = this.tasks.filter(t => this.getEffectiveStatus(t) === 'done').length;
+    const inProgress = this.tasks.filter(t => this.getEffectiveStatus(t) === 'in_progress').length;
+    const notStarted = this.tasks.filter(t => this.getEffectiveStatus(t) === 'not_started').length;
+    const overdue = this.tasks.filter(t => this.getEffectiveStatus(t) === 'overdue').length;
 
     document.getElementById('stat-total').textContent = total;
     document.getElementById('stat-done').textContent = done;
     document.getElementById('stat-progress').textContent = inProgress;
     document.getElementById('stat-pending').textContent = notStarted;
+    document.getElementById('stat-overdue').textContent = overdue;
   }
 
   // Urgent Deadline Alert Banner (within 48 hours)
@@ -210,6 +194,26 @@ class HomeworkTrackerApp {
     `;
   }
 
+  // Filter by Stat Card Click
+  filterByStatCard(status) {
+    this.statusFilter = status;
+    this.activeView = 'list';
+
+    document.querySelectorAll('.pill-btn').forEach(btn => {
+      if (btn.getAttribute('data-status') === status) {
+        btn.classList.add('active');
+      } else {
+        btn.classList.remove('active');
+      }
+    });
+
+    document.getElementById('btn-view-list')?.classList.add('active');
+    document.getElementById('btn-view-calendar')?.classList.remove('active');
+
+    this.renderAll();
+    document.querySelector('.toolbar')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
   // Populate unique subjects in filter dropdown
   populateSubjectSelect() {
     const filterSelect = document.getElementById('filter-subject');
@@ -232,11 +236,19 @@ class HomeworkTrackerApp {
                           t.subject.toLowerCase().includes(query) ||
                           (t.description && t.description.toLowerCase().includes(query));
 
-      const matchStatus = this.statusFilter === 'all' || t.status === this.statusFilter;
+      const effectiveStatus = this.getEffectiveStatus(t);
+      const matchStatus = this.statusFilter === 'all' || effectiveStatus === this.statusFilter;
       const matchSubject = this.subjectFilter === 'all' || t.subject === this.subjectFilter;
 
       return matchSearch && matchStatus && matchSubject;
     });
+  }
+
+  // Render Task Type Badge Tag
+  renderTaskTypeTag(type) {
+    const label = type === 'group' ? 'งานกลุ่ม' : type === 'project' ? 'โปรเจกต์' : 'งานเดี่ยว';
+    const icon = type === 'group' ? 'fa-users' : type === 'project' ? 'fa-diagram-project' : 'fa-user';
+    return `<span class="task-type-tag type-${type || 'individual'}"><i class="fa-solid ${icon}"></i> ${label}</span>`;
   }
 
   // Render Tasks List Table/Cards
@@ -257,10 +269,14 @@ class HomeworkTrackerApp {
     }
 
     listContainer.innerHTML = filtered.map(t => {
+      const effectiveStatus = this.getEffectiveStatus(t);
+
       let statusBadgeHTML = '';
-      if (t.status === 'done') {
+      if (effectiveStatus === 'done') {
         statusBadgeHTML = `<span class="status-badge done"><i class="fa-solid fa-circle-check"></i> ส่งแล้ว</span>`;
-      } else if (t.status === 'in_progress') {
+      } else if (effectiveStatus === 'overdue') {
+        statusBadgeHTML = `<span class="status-badge overdue"><i class="fa-solid fa-clock-rotate-left"></i> เลยกำหนดส่ง</span>`;
+      } else if (effectiveStatus === 'in_progress') {
         statusBadgeHTML = `<span class="status-badge in_progress"><i class="fa-solid fa-clock"></i> กำลังทำ</span>`;
       } else {
         statusBadgeHTML = `<span class="status-badge not_started"><i class="fa-solid fa-circle-exclamation"></i> ยังไม่เริ่ม</span>`;
@@ -271,6 +287,7 @@ class HomeworkTrackerApp {
           <div class="task-content">
             <div class="task-header-row">
               <span class="subject-badge">${t.subject}</span>
+              ${this.renderTaskTypeTag(t.task_type)}
               ${statusBadgeHTML}
             </div>
             <div class="task-title">${t.title}</div>
@@ -341,11 +358,14 @@ class HomeworkTrackerApp {
       html += `
         <div class="calendar-day-cell ${isToday ? 'today' : ''}">
           <div class="calendar-day-number">${d}</div>
-          ${dayTasks.map(t => `
-            <div class="calendar-task-pill ${t.status}" onclick="app.openEditModal('${t.id}')" title="${t.title} (${t.subject})">
-              ${t.title}
-            </div>
-          `).join('')}
+          ${dayTasks.map(t => {
+            const effStatus = this.getEffectiveStatus(t);
+            return `
+              <div class="calendar-task-pill ${effStatus}" onclick="app.openEditModal('${t.id}')" title="${t.title} (${t.subject})">
+                ${t.title}
+              </div>
+            `;
+          }).join('')}
         </div>
       `;
     }
@@ -374,6 +394,7 @@ class HomeworkTrackerApp {
     document.getElementById('modal-title').textContent = 'เพิ่มการบ้าน / งานใหม่';
     document.getElementById('task-form').reset();
     document.getElementById('form-id').value = '';
+    document.getElementById('form-type').value = 'individual';
     document.getElementById('form-duedate').value = new Date(Date.now() + 86400000).toISOString().split('T')[0];
     document.getElementById('task-modal').classList.add('active');
   }
@@ -388,6 +409,7 @@ class HomeworkTrackerApp {
     document.getElementById('form-id').value = task.id;
     document.getElementById('form-title').value = task.title;
     document.getElementById('form-subject').value = task.subject;
+    document.getElementById('form-type').value = task.task_type || 'individual';
     document.getElementById('form-duedate').value = task.due_date;
     document.getElementById('form-status').value = task.status;
     document.getElementById('form-desc').value = task.description || '';
@@ -406,6 +428,7 @@ class HomeworkTrackerApp {
 
     const title = document.getElementById('form-title').value;
     const subject = document.getElementById('form-subject').value;
+    const task_type = document.getElementById('form-type').value;
     const due_date = document.getElementById('form-duedate').value;
     const status = document.getElementById('form-status').value;
     const description = document.getElementById('form-desc').value;
@@ -417,6 +440,7 @@ class HomeworkTrackerApp {
           ...this.tasks[idx],
           title,
           subject,
+          task_type,
           due_date,
           status,
           description
@@ -427,6 +451,7 @@ class HomeworkTrackerApp {
         id: `task-${Date.now()}`,
         title,
         subject,
+        task_type,
         due_date,
         status,
         description
