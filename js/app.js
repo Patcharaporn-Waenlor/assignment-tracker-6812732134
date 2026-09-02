@@ -93,7 +93,18 @@ class HomeworkTrackerApp {
     const minutes = String(now.getMinutes()).padStart(2, '0');
     const seconds = String(now.getSeconds()).padStart(2, '0');
 
-    clockEl.innerHTML = `<i class="fa-regular fa-clock"></i> วัน${dayName}ที่ ${dayDate} ${monthName} ${yearBE} | ${hours}:${minutes}:${seconds} น.`;
+    clockEl.innerHTML = `<span class="live-dot"></span><i class="fa-regular fa-clock"></i> วัน${dayName}ที่ ${dayDate} ${monthName} ${yearBE} | ${hours}:${minutes}:${seconds} น.`;
+  }
+
+  toggleTheme() {
+    const currentTheme = document.body.getAttribute('data-theme') || 'dark';
+    const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+    document.body.setAttribute('data-theme', newTheme);
+
+    const btnTheme = document.getElementById('btn-toggle-theme');
+    if (btnTheme) {
+      btnTheme.innerHTML = newTheme === 'dark' ? '<i class="fa-solid fa-moon"></i>' : '<i class="fa-solid fa-sun"></i>';
+    }
   }
 
   renderAll() {

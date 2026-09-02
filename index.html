@@ -33,9 +33,14 @@
       <div class="nav-actions">
         <!-- Live Date & Time Header Badge -->
         <div class="live-clock-badge" id="live-clock">
+          <span class="live-dot"></span>
           <i class="fa-regular fa-clock"></i> กำลังโหลด...
         </div>
         
+        <button class="btn-theme-toggle" id="btn-toggle-theme" title="สลับธีม สว่าง/มืด" onclick="app.toggleTheme()">
+          <i class="fa-solid fa-moon"></i>
+        </button>
+
         <button class="btn-primary" onclick="app.openAddModal()">
           <i class="fa-solid fa-plus"></i> เพิ่มการบ้าน
         </button>
