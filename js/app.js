@@ -1,6 +1,6 @@
 /* ==========================================================================
    MINIMALIST ASSIGNMENT TRACKER APPLICATION LOGIC
-   Handles Task Storage, Urgent Deadline Alerts, Filters, Status Updates & Form Modals
+   Handles Task Storage, Live Header Clock, Calendar View, Filters & Form Modals
    ========================================================================== */
 
 const INITIAL_DEMO_TASKS = [
@@ -52,6 +52,8 @@ class HomeworkTrackerApp {
     this.searchQuery = '';
     this.statusFilter = 'all'; // all | not_started | in_progress | done
     this.subjectFilter = 'all';
+    this.activeView = 'list'; // list | calendar
+    this.currentCalendarDate = new Date();
     this.editingTaskId = null;
 
     this.init();
@@ -59,6 +61,7 @@ class HomeworkTrackerApp {
 
   init() {
     this.saveTasks();
+    this.startLiveClock();
     this.setupEventListeners();
     this.renderAll();
   }
@@ -67,11 +70,46 @@ class HomeworkTrackerApp {
     localStorage.setItem('assignment_tracker_data', JSON.stringify(this.tasks));
   }
 
+  // Live Date / Month / Year / Time Header Ticker
+  startLiveClock() {
+    this.updateClockDisplay();
+    setInterval(() => this.updateClockDisplay(), 1000);
+  }
+
+  updateClockDisplay() {
+    const clockEl = document.getElementById('live-clock');
+    if (!clockEl) return;
+
+    const now = new Date();
+    const thaiDays = ["อาทิตย์", "จันทร์", "อังคาร", "พุธ", "พฤหัสบดี", "ศุกร์", "เสาร์"];
+    const thaiMonths = ["มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน", "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม"];
+
+    const dayName = thaiDays[now.getDay()];
+    const dayDate = now.getDate();
+    const monthName = thaiMonths[now.getMonth()];
+    const yearBE = now.getFullYear() + 543;
+
+    const hours = String(now.getHours()).padStart(2, '0');
+    const minutes = String(now.getMinutes()).padStart(2, '0');
+    const seconds = String(now.getSeconds()).padStart(2, '0');
+
+    clockEl.innerHTML = `<i class="fa-regular fa-clock"></i> วัน${dayName}ที่ ${dayDate} ${monthName} ${yearBE} | ${hours}:${minutes}:${seconds} น.`;
+  }
+
   renderAll() {
     this.renderStats();
     this.renderUrgentBanner();
     this.populateSubjectSelect();
-    this.renderTasks();
+    
+    if (this.activeView === 'list') {
+      document.getElementById('list-view-section').style.display = 'block';
+      document.getElementById('calendar-view-section').style.display = 'none';
+      this.renderTasks();
+    } else {
+      document.getElementById('list-view-section').style.display = 'none';
+      document.getElementById('calendar-view-section').style.display = 'block';
+      this.renderCalendar();
+    }
   }
 
   // Dashboard Stats Summary
@@ -226,6 +264,65 @@ class HomeworkTrackerApp {
     }).join('');
   }
 
+  // Academic Calendar Renderer
+  renderCalendar() {
+    const grid = document.getElementById('calendar-grid-container');
+    const monthLabel = document.getElementById('calendar-month-label');
+    if (!grid || !monthLabel) return;
+
+    const year = this.currentCalendarDate.getFullYear();
+    const month = this.currentCalendarDate.getMonth();
+
+    const thaiMonths = ["มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน", "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม"];
+    monthLabel.textContent = `${thaiMonths[month]} ${year + 543}`;
+
+    const firstDay = new Date(year, month, 1).getDay();
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+    let html = `
+      <div class="calendar-day-header">อา.</div>
+      <div class="calendar-day-header">จ.</div>
+      <div class="calendar-day-header">อ.</div>
+      <div class="calendar-day-header">พ.</div>
+      <div class="calendar-day-header">พฤ.</div>
+      <div class="calendar-day-header">ศ.</div>
+      <div class="calendar-day-header">ส.</div>
+    `;
+
+    // Empty lead slots
+    for (let i = 0; i < firstDay; i++) {
+      html += `<div class="calendar-day-cell empty" style="opacity: 0.3; background: transparent; border: none;"></div>`;
+    }
+
+    const todayStr = new Date().toISOString().split('T')[0];
+
+    // Day slots
+    for (let d = 1; d <= daysInMonth; d++) {
+      const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+      const isToday = dateStr === todayStr;
+      
+      const dayTasks = this.tasks.filter(t => t.due_date === dateStr);
+
+      html += `
+        <div class="calendar-day-cell ${isToday ? 'today' : ''}">
+          <div class="calendar-day-number">${d}</div>
+          ${dayTasks.map(t => `
+            <div class="calendar-task-pill ${t.status}" onclick="app.openEditModal('${t.id}')" title="${t.title} (${t.subject})">
+              ${t.title}
+            </div>
+          `).join('')}
+        </div>
+      `;
+    }
+
+    grid.innerHTML = html;
+  }
+
+  navigateCalendar(delta) {
+    this.currentCalendarDate.setMonth(this.currentCalendarDate.getMonth() + delta);
+    this.renderCalendar();
+  }
+
   // Update Status Action
   updateTaskStatus(id, newStatus) {
     const task = this.tasks.find(t => t.id === id);
@@ -335,6 +432,21 @@ class HomeworkTrackerApp {
         this.statusFilter = e.currentTarget.getAttribute('data-status');
         this.renderTasks();
       });
+    });
+
+    // View Mode Toggle (List vs Calendar)
+    document.getElementById('btn-view-list')?.addEventListener('click', () => {
+      this.activeView = 'list';
+      document.getElementById('btn-view-list').classList.add('active');
+      document.getElementById('btn-view-calendar').classList.remove('active');
+      this.renderAll();
+    });
+
+    document.getElementById('btn-view-calendar')?.addEventListener('click', () => {
+      this.activeView = 'calendar';
+      document.getElementById('btn-view-calendar').classList.add('active');
+      document.getElementById('btn-view-list').classList.remove('active');
+      this.renderAll();
     });
   }
 }

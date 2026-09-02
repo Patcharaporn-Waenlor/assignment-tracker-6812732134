@@ -29,9 +29,17 @@
           <p>Homework & Assignment Tracker</p>
         </div>
       </div>
-      <button class="btn-primary" onclick="app.openAddModal()">
-        <i class="fa-solid fa-plus"></i> เพิ่มการบ้าน
-      </button>
+
+      <div class="nav-actions">
+        <!-- Live Date & Time Header Badge -->
+        <div class="live-clock-badge" id="live-clock">
+          <i class="fa-regular fa-clock"></i> กำลังโหลด...
+        </div>
+        
+        <button class="btn-primary" onclick="app.openAddModal()">
+          <i class="fa-solid fa-plus"></i> เพิ่มการบ้าน
+        </button>
+      </div>
     </div>
   </header>
 
@@ -90,7 +98,7 @@
     <!-- Urgent Deadline Alert Banner -->
     <div id="urgent-banner-container"></div>
 
-    <!-- Toolbar Controls (Search & Filter) -->
+    <!-- Toolbar Controls (Search & Filter & View Mode Switcher) -->
     <div class="toolbar">
       <div class="search-field">
         <i class="fa-solid fa-magnifying-glass"></i>
@@ -108,13 +116,43 @@
           <button class="pill-btn" data-status="in_progress">กำลังทำ</button>
           <button class="pill-btn" data-status="done">ส่งแล้ว</button>
         </div>
+
+        <!-- View Mode Switcher -->
+        <div class="view-mode-toggle">
+          <button class="btn-view-mode active" id="btn-view-list" title="มุมมองรายการ">
+            <i class="fa-solid fa-list-check"></i> รายการการบ้าน
+          </button>
+          <button class="btn-view-mode" id="btn-view-calendar" title="มุมมองปฏิทิน">
+            <i class="fa-regular fa-calendar-days"></i> ปฏิทินกำหนดส่ง
+          </button>
+        </div>
       </div>
     </div>
 
-    <!-- Task List Container -->
-    <div class="task-table-card">
-      <div class="task-list" id="task-list-container">
-        <!-- Rendered by JS -->
+    <!-- SECTION 1: Task List View -->
+    <div id="list-view-section">
+      <div class="task-table-card">
+        <div class="task-list" id="task-list-container">
+          <!-- Rendered by JS -->
+        </div>
+      </div>
+    </div>
+
+    <!-- SECTION 2: Academic Calendar View -->
+    <div id="calendar-view-section" style="display: none;">
+      <div class="calendar-card">
+        <div class="calendar-header">
+          <button class="btn-secondary" onclick="app.navigateCalendar(-1)">
+            <i class="fa-solid fa-chevron-left"></i> เดือนก่อนหน้า
+          </button>
+          <h3 id="calendar-month-label">กันยายน 2569</h3>
+          <button class="btn-secondary" onclick="app.navigateCalendar(1)">
+            เดือนถัดไป <i class="fa-solid fa-chevron-right"></i>
+          </button>
+        </div>
+        <div class="calendar-grid" id="calendar-grid-container">
+          <!-- Rendered by JS -->
+        </div>
       </div>
     </div>
 

@@ -1,6 +1,6 @@
 /* ==========================================================================
    MINIMALIST DASHBOARD DESIGN SYSTEM
-   Homework & Assignment Tracker
+   Homework & Assignment Tracker (With Calendar & Live Clock)
    Colors: White (#ffffff), Deep Navy (#0f172a / #1e293b), Slate Gray (#f8fafc / #64748b)
    Status Badges: Done (Green #10b981), In Progress (Amber #f59e0b), Not Started (Rose #ef4444)
    Font: Prompt (Google Fonts)
@@ -72,7 +72,7 @@ body {
 .navbar-container {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 16px 24px;
+  padding: 14px 24px;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -106,6 +106,29 @@ body {
 .brand-info p {
   font-size: 0.75rem;
   color: #94a3b8;
+}
+
+.nav-actions {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.live-clock-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background-color: #1e293b;
+  color: #e2e8f0;
+  border: 1px solid #334155;
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+.live-clock-badge i {
+  color: #38bdf8;
 }
 
 /* Buttons */
@@ -376,6 +399,38 @@ body {
   font-weight: 600;
 }
 
+/* View Mode Switcher (List vs Calendar) */
+.view-mode-toggle {
+  display: flex;
+  background-color: #f1f5f9;
+  padding: 3px;
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+}
+
+.btn-view-mode {
+  padding: 7px 14px;
+  border: none;
+  background: transparent;
+  color: var(--text-secondary);
+  font-family: inherit;
+  font-size: 0.85rem;
+  font-weight: 500;
+  border-radius: 6px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.15s ease;
+}
+
+.btn-view-mode.active {
+  background-color: var(--primary);
+  color: #ffffff;
+  font-weight: 600;
+  box-shadow: var(--shadow-sm);
+}
+
 /* Task Table / Cards List */
 .task-table-card {
   background-color: var(--bg-card);
@@ -529,6 +584,98 @@ body {
   color: #cbd5e1;
 }
 
+/* Academic Calendar View */
+.calendar-card {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: var(--shadow-sm);
+}
+
+.calendar-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.calendar-header h3 {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 8px;
+}
+
+.calendar-day-header {
+  text-align: center;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  padding: 8px 0;
+}
+
+.calendar-day-cell {
+  background-color: #f8fafc;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  min-height: 95px;
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.calendar-day-cell.today {
+  background-color: #eff6ff;
+  border-color: #bfdbfe;
+}
+
+.calendar-day-number {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+}
+
+.calendar-task-pill {
+  font-size: 0.72rem;
+  font-weight: 500;
+  padding: 3px 6px;
+  border-radius: 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  cursor: pointer;
+  transition: opacity 0.15s ease;
+}
+
+.calendar-task-pill:hover {
+  opacity: 0.85;
+}
+
+.calendar-task-pill.done {
+  background-color: var(--badge-done-bg);
+  color: var(--badge-done-text);
+  border: 1px solid var(--badge-done-border);
+}
+
+.calendar-task-pill.in_progress {
+  background-color: var(--badge-progress-bg);
+  color: var(--badge-progress-text);
+  border: 1px solid var(--badge-progress-border);
+}
+
+.calendar-task-pill.not_started {
+  background-color: var(--badge-notstarted-bg);
+  color: var(--badge-notstarted-text);
+  border: 1px solid var(--badge-notstarted-border);
+}
+
 /* Modal Form */
 .modal-backdrop {
   position: fixed;
@@ -618,7 +765,8 @@ body {
 
 /* Responsive adjustments */
 @media (max-width: 640px) {
-  .navbar-container { padding: 14px 16px; }
+  .navbar-container { padding: 14px 16px; flex-direction: column; align-items: flex-start; gap: 12px; }
+  .nav-actions { width: 100%; justify-content: space-between; }
   .main-wrapper { padding: 20px 16px; }
   .task-item { flex-direction: column; align-items: flex-start; }
   .task-actions { width: 100%; justify-content: flex-end; pt: 12px; border-top: 1px solid var(--border-color); }
