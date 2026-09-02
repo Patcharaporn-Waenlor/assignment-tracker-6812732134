@@ -1,0 +1,18 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "chrome",
+            "request": "launch",
+            "name": "เปิดหน้าเว็บ Assignment Tracker (Chrome)",
+            "file": "${workspaceFolder}/index.html"
+        },
+        {
+            "type": "chrome",
+            "request": "launch",
+            "name": "เปิดเว็บผ่าน Localhost (Port 8000)",
+            "url": "http://localhost:8000",
+            "webRoot": "${workspaceFolder}"
+        }
+    ]
+}
