@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "echo 'Static HTML Deployment'",
     "start": "next start",
     "lint": "next lint"
   },
