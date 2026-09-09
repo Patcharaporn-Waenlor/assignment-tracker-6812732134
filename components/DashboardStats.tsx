@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { Task } from '@/types/task';
-import { Layers, CheckCircle2, Loader2, AlertCircle, Clock } from 'lucide-react';
+import { Layers, CheckCircle2, Zap, Hourglass, Flame } from 'lucide-react';
 
 interface DashboardStatsProps {
   tasks: Task[];
@@ -23,87 +23,119 @@ export default function DashboardStats({ tasks }: DashboardStatsProps) {
     (t) => t.status !== 'done' && t.due_date < todayStr
   ).length;
 
+  const donePct = total > 0 ? Math.round((done / total) * 100) : 0;
+  const inProgressPct = total > 0 ? Math.round((inProgress / total) * 100) : 0;
+  const notStartedPct = total > 0 ? Math.round((notStarted / total) * 100) : 0;
+  const overduePct = total > 0 ? Math.round((overdue / total) * 100) : 0;
+
   const stats = [
     {
       label: 'งานทั้งหมด',
-      sublabel: 'ALL',
+      sublabel: 'ทั้งหมด',
       value: total,
       icon: Layers,
-      accentBorder: 'before:bg-gradient-to-r before:from-blue-500 before:to-blue-400',
-      badgeClass: 'bg-blue-50 text-blue-700 border-blue-200',
-      iconClass: 'bg-gradient-to-br from-blue-100 to-blue-50 text-blue-600 shadow-blue-500/10',
-      hoverBg: 'hover:border-blue-300 hover:bg-gradient-to-b hover:from-white hover:to-blue-50/30',
+      cardBg: 'bg-gradient-to-br from-white via-blue-50/40 to-blue-100/60 border-blue-200/80 hover:border-blue-500 hover:shadow-blue-500/15',
+      chipBg: 'bg-blue-100 text-blue-800',
+      iconBox: 'bg-gradient-to-br from-blue-600 to-blue-500 text-white shadow-blue-500/30',
+      barFill: 'bg-gradient-to-r from-blue-600 to-blue-400',
+      pctText: 'ภาระการเรียนสะสมทั้งหมด',
+      pctWidth: 100,
     },
     {
-      label: 'ส่งแล้ว',
-      sublabel: 'DONE',
+      label: 'ส่งงานเรียบร้อย',
+      sublabel: 'ส่งแล้ว',
       value: done,
       icon: CheckCircle2,
-      accentBorder: 'before:bg-gradient-to-r before:from-emerald-500 before:to-emerald-400',
-      badgeClass: 'bg-emerald-50 text-emerald-700 border-emerald-200',
-      iconClass: 'bg-gradient-to-br from-emerald-100 to-emerald-50 text-emerald-600 shadow-emerald-500/10',
-      hoverBg: 'hover:border-emerald-300 hover:bg-gradient-to-b hover:from-white hover:to-emerald-50/30',
+      cardBg: 'bg-gradient-to-br from-white via-emerald-50/40 to-emerald-100/60 border-emerald-200/80 hover:border-emerald-500 hover:shadow-emerald-500/15',
+      chipBg: 'bg-emerald-100 text-emerald-800',
+      iconBox: 'bg-gradient-to-br from-emerald-600 to-emerald-500 text-white shadow-emerald-500/30',
+      barFill: 'bg-gradient-to-r from-emerald-600 to-emerald-400',
+      pctText: `${donePct}% ของงานทั้งหมด`,
+      pctWidth: donePct,
     },
     {
-      label: 'กำลังทำ',
-      sublabel: 'IN PROGRESS',
+      label: 'กำลังดำเนินการ',
+      sublabel: 'กำลังทำ',
       value: inProgress,
-      icon: Loader2,
-      accentBorder: 'before:bg-gradient-to-r before:from-amber-500 before:to-amber-400',
-      badgeClass: 'bg-amber-50 text-amber-800 border-amber-200',
-      iconClass: 'bg-gradient-to-br from-amber-100 to-amber-50 text-amber-600 shadow-amber-500/10',
-      hoverBg: 'hover:border-amber-300 hover:bg-gradient-to-b hover:from-white hover:to-amber-50/30',
+      icon: Zap,
+      cardBg: 'bg-gradient-to-br from-white via-amber-50/40 to-amber-100/60 border-amber-200/80 hover:border-amber-500 hover:shadow-amber-500/15',
+      chipBg: 'bg-amber-100 text-amber-900',
+      iconBox: 'bg-gradient-to-br from-amber-600 to-amber-500 text-white shadow-amber-500/30',
+      barFill: 'bg-gradient-to-r from-amber-600 to-amber-400',
+      pctText: `${inProgressPct}% อยู่ระหว่างทำ`,
+      pctWidth: inProgressPct,
     },
     {
-      label: 'ยังไม่เริ่ม',
-      sublabel: 'NOT STARTED',
+      label: 'ยังไม่ได้เริ่มทำ',
+      sublabel: 'ยังไม่เริ่ม',
       value: notStarted,
-      icon: AlertCircle,
-      accentBorder: 'before:bg-gradient-to-r before:from-rose-500 before:to-rose-400',
-      badgeClass: 'bg-rose-50 text-rose-800 border-rose-200',
-      iconClass: 'bg-gradient-to-br from-rose-100 to-rose-50 text-rose-600 shadow-rose-500/10',
-      hoverBg: 'hover:border-rose-300 hover:bg-gradient-to-b hover:from-white hover:to-rose-50/30',
+      icon: Hourglass,
+      cardBg: 'bg-gradient-to-br from-white via-rose-50/40 to-rose-100/60 border-rose-200/80 hover:border-rose-500 hover:shadow-rose-500/15',
+      chipBg: 'bg-rose-100 text-rose-900',
+      iconBox: 'bg-gradient-to-br from-rose-600 to-rose-500 text-white shadow-rose-500/30',
+      barFill: 'bg-gradient-to-r from-rose-600 to-rose-400',
+      pctText: `${notStartedPct}% รอเริ่มงาน`,
+      pctWidth: notStartedPct,
     },
     {
-      label: 'เลยกำหนดส่ง',
-      sublabel: 'OVERDUE',
+      label: 'เกินกำหนดส่งแล้ว',
+      sublabel: 'เลยกำหนดส่ง',
       value: overdue,
-      icon: Clock,
-      accentBorder: 'before:bg-gradient-to-r before:from-red-600 before:to-red-500',
-      badgeClass: 'bg-red-50 text-red-800 border-red-200',
-      iconClass: 'bg-gradient-to-br from-red-100 to-red-50 text-red-700 shadow-red-500/15',
-      hoverBg: 'hover:border-red-300 hover:bg-gradient-to-b hover:from-white hover:to-red-50/30',
+      icon: Flame,
+      cardBg: 'bg-gradient-to-br from-white via-red-50/50 to-red-100/70 border-red-300/80 hover:border-red-600 hover:shadow-red-500/20',
+      chipBg: 'bg-red-100 text-red-900',
+      iconBox: 'bg-gradient-to-br from-red-700 to-red-500 text-white shadow-red-500/35',
+      barFill: 'bg-gradient-to-r from-red-700 to-red-500',
+      pctText: `${overduePct}% ต้องรีบส่งด่วน`,
+      pctWidth: overduePct,
     },
   ];
 
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 mb-8">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
       {stats.map((stat, idx) => {
         const IconComponent = stat.icon;
         return (
           <div
             key={idx}
-            className={`group relative bg-white border border-slate-200/80 rounded-2xl p-4 shadow-sm hover:shadow-md transition-all duration-200 flex flex-col justify-between overflow-hidden cursor-pointer before:absolute before:top-0 before:left-0 before:right-0 before:h-[3px] before:rounded-t-2xl ${stat.accentBorder} ${stat.hoverBg}`}
+            className={`group relative rounded-2xl p-5 shadow-sm hover:-translate-y-1.5 hover:scale-[1.02] transition-all duration-300 flex flex-col justify-between overflow-hidden cursor-pointer border ${stat.cardBg}`}
           >
-            <div className="flex items-center justify-between gap-2 mb-3">
-              <span className="text-xs font-bold text-slate-700 whitespace-nowrap">
-                {stat.label}
-              </span>
+            {/* Header: Icon & Chip */}
+            <div className="flex items-center justify-between mb-4">
+              <div
+                className={`w-12 h-12 rounded-xl flex items-center justify-center shadow-md transition-transform duration-300 group-hover:scale-110 group-hover:-rotate-6 ${stat.iconBox}`}
+              >
+                <IconComponent className="w-6 h-6" />
+              </div>
               <span
-                className={`text-[10px] font-bold px-2 py-0.5 rounded-full border uppercase tracking-wider whitespace-nowrap ${stat.badgeClass}`}
+                className={`text-xs font-extrabold px-2.5 py-1 rounded-full whitespace-nowrap ${stat.chipBg}`}
               >
                 {stat.sublabel}
               </span>
             </div>
-            <div className="flex items-end justify-between">
-              <span className="text-3xl font-extrabold text-slate-900 tracking-tight leading-none">
+
+            {/* Body: Value */}
+            <div className="flex items-baseline gap-1.5 mb-3">
+              <span className="text-4xl font-extrabold text-slate-900 tracking-tight leading-none">
                 {stat.value}
               </span>
-              <div
-                className={`w-11 h-11 rounded-xl flex items-center justify-center shadow-sm transition-transform duration-300 group-hover:scale-110 group-hover:-rotate-3 ${stat.iconClass}`}
-              >
-                <IconComponent className="w-5 h-5" />
+              <span className="text-xs font-semibold text-slate-500">รายการ</span>
+            </div>
+
+            {/* Footer: Title & Progress bar */}
+            <div className="flex flex-col gap-1.5">
+              <span className="text-sm font-bold text-slate-800 leading-tight">
+                {stat.label}
+              </span>
+              <div className="w-full h-1.5 bg-slate-200/60 rounded-full overflow-hidden">
+                <div
+                  className={`h-full rounded-full transition-all duration-500 ${stat.barFill}`}
+                  style={{ width: `${stat.pctWidth}%` }}
+                />
               </div>
+              <span className="text-[11px] font-semibold text-slate-500">
+                {stat.pctText}
+              </span>
             </div>
           </div>
         );

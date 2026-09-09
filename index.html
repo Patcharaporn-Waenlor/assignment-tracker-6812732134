@@ -37,6 +37,26 @@
           <i class="fa-regular fa-clock"></i> กำลังโหลด...
         </div>
 
+        <!-- Notification Bell Center -->
+        <div class="notif-dropdown-wrapper">
+          <button class="btn-icon-nav" id="notif-bell-btn" onclick="app.toggleNotifDropdown()" title="การแจ้งเตือน">
+            <i class="fa-regular fa-bell"></i>
+            <span class="notif-badge" id="notif-count-badge" style="display: none;">0</span>
+          </button>
+          
+          <div class="notif-dropdown-menu" id="notif-dropdown">
+            <div class="notif-header">
+              <h3><i class="fa-solid fa-bell text-amber" style="color: #f59e0b;"></i> การแจ้งเตือนเดดไลน์</h3>
+              <button class="notif-enable-btn" onclick="app.requestNotificationPermission()">
+                <i class="fa-solid fa-mobile-screen"></i> เปิดแจ้งเตือนเบราว์เซอร์
+              </button>
+            </div>
+            <div class="notif-body" id="notif-list-container">
+              <!-- Rendered by JS -->
+            </div>
+          </div>
+        </div>
+
         <button class="btn-primary" onclick="app.openAddModal()">
           <i class="fa-solid fa-plus"></i> เพิ่มการบ้าน
         </button>
@@ -53,72 +73,114 @@
       <p>จัดการภาระการเรียน ตรวจสอบเดดไลน์ และติดตามสถานะงานส่งทุกรายวิชาในที่เดียว</p>
     </div>
 
-    <!-- Dashboard Summary Stat Cards (5 Cards) -->
+    <!-- Dashboard Summary Stat Cards (5 Cards - Vibrant Glass System) -->
     <div class="dashboard-grid">
+      
+      <!-- Card 1: งานทั้งหมด -->
       <div class="stat-card total" onclick="app.filterByStatCard('all')" title="คลิกเพื่อดูกระดานงานทั้งหมด">
         <div class="stat-card-header">
-          <span class="stat-label">งานทั้งหมด</span>
-          <span class="stat-badge total">All</span>
-        </div>
-        <div class="stat-card-body">
-          <div class="stat-value" id="stat-total">0</div>
-          <div class="stat-icon total">
+          <div class="stat-icon-box total">
             <i class="fa-solid fa-layer-group"></i>
           </div>
+          <span class="stat-chip total">ทั้งหมด</span>
+        </div>
+        <div class="stat-card-body">
+          <span class="stat-value" id="stat-total">0</span>
+          <span class="stat-unit">รายการ</span>
+        </div>
+        <div class="stat-card-footer">
+          <div class="stat-title">งานทั้งหมดในระบบ</div>
+          <div class="stat-bar-track">
+            <div class="stat-bar-fill total" style="width: 100%;"></div>
+          </div>
+          <div class="stat-subtext">ภาระการเรียนสะสมทั้งหมด</div>
         </div>
       </div>
 
+      <!-- Card 2: ส่งแล้ว -->
       <div class="stat-card done" onclick="app.filterByStatCard('done')" title="คลิกเพื่อดูกรองเฉพาะงานที่ส่งแล้ว">
         <div class="stat-card-header">
-          <span class="stat-label">ส่งแล้ว</span>
-          <span class="stat-badge done">Done</span>
-        </div>
-        <div class="stat-card-body">
-          <div class="stat-value" id="stat-done">0</div>
-          <div class="stat-icon done">
+          <div class="stat-icon-box done">
             <i class="fa-solid fa-circle-check"></i>
           </div>
+          <span class="stat-chip done">ส่งแล้ว</span>
+        </div>
+        <div class="stat-card-body">
+          <span class="stat-value" id="stat-done">0</span>
+          <span class="stat-unit">รายการ</span>
+        </div>
+        <div class="stat-card-footer">
+          <div class="stat-title">ส่งงานเรียบร้อย</div>
+          <div class="stat-bar-track">
+            <div class="stat-bar-fill done" id="stat-done-bar" style="width: 0%;"></div>
+          </div>
+          <div class="stat-subtext" id="stat-done-pct">0% ของงานทั้งหมด</div>
         </div>
       </div>
 
+      <!-- Card 3: กำลังทำ -->
       <div class="stat-card progress" onclick="app.filterByStatCard('in_progress')" title="คลิกเพื่อดูกรองเฉพาะงานที่กำลังทำ">
         <div class="stat-card-header">
-          <span class="stat-label">กำลังทำ</span>
-          <span class="stat-badge progress">In Progress</span>
+          <div class="stat-icon-box progress">
+            <i class="fa-solid fa-bolt"></i>
+          </div>
+          <span class="stat-chip progress">กำลังทำ</span>
         </div>
         <div class="stat-card-body">
-          <div class="stat-value" id="stat-progress">0</div>
-          <div class="stat-icon progress">
-            <i class="fa-solid fa-spinner"></i>
+          <span class="stat-value" id="stat-progress">0</span>
+          <span class="stat-unit">รายการ</span>
+        </div>
+        <div class="stat-card-footer">
+          <div class="stat-title">กำลังดำเนินการ</div>
+          <div class="stat-bar-track">
+            <div class="stat-bar-fill progress" id="stat-progress-bar" style="width: 0%;"></div>
           </div>
+          <div class="stat-subtext" id="stat-progress-pct">0% อยู่ระหว่างทำ</div>
         </div>
       </div>
 
+      <!-- Card 4: ยังไม่เริ่ม -->
       <div class="stat-card pending" onclick="app.filterByStatCard('not_started')" title="คลิกเพื่อดูกรองเฉพาะงานที่ยังไม่เริ่ม">
         <div class="stat-card-header">
-          <span class="stat-label">ยังไม่เริ่ม</span>
-          <span class="stat-badge pending">Not Started</span>
+          <div class="stat-icon-box pending">
+            <i class="fa-solid fa-hourglass-start"></i>
+          </div>
+          <span class="stat-chip pending">ยังไม่เริ่ม</span>
         </div>
         <div class="stat-card-body">
-          <div class="stat-value" id="stat-pending">0</div>
-          <div class="stat-icon pending">
-            <i class="fa-solid fa-circle-exclamation"></i>
+          <span class="stat-value" id="stat-pending">0</span>
+          <span class="stat-unit">รายการ</span>
+        </div>
+        <div class="stat-card-footer">
+          <div class="stat-title">ยังไม่ได้เริ่มทำ</div>
+          <div class="stat-bar-track">
+            <div class="stat-bar-fill pending" id="stat-pending-bar" style="width: 0%;"></div>
           </div>
+          <div class="stat-subtext" id="stat-pending-pct">0% รอเริ่มงาน</div>
         </div>
       </div>
 
+      <!-- Card 5: เลยกำหนดส่ง -->
       <div class="stat-card overdue" onclick="app.filterByStatCard('overdue')" title="คลิกเพื่อดูกรองเฉพาะงานที่เลยกำหนดส่ง">
         <div class="stat-card-header">
-          <span class="stat-label">เลยกำหนดส่ง</span>
-          <span class="stat-badge overdue">Overdue</span>
+          <div class="stat-icon-box overdue">
+            <i class="fa-solid fa-fire-flame-curved"></i>
+          </div>
+          <span class="stat-chip overdue">เลยกำหนดส่ง</span>
         </div>
         <div class="stat-card-body">
-          <div class="stat-value" id="stat-overdue">0</div>
-          <div class="stat-icon overdue">
-            <i class="fa-solid fa-clock-rotate-left"></i>
+          <span class="stat-value" id="stat-overdue">0</span>
+          <span class="stat-unit">รายการ</span>
+        </div>
+        <div class="stat-card-footer">
+          <div class="stat-title">เกินกำหนดส่งแล้ว</div>
+          <div class="stat-bar-track">
+            <div class="stat-bar-fill overdue" id="stat-overdue-bar" style="width: 0%;"></div>
           </div>
+          <div class="stat-subtext" id="stat-overdue-pct">0% ต้องรีบส่งด่วน</div>
         </div>
       </div>
+
     </div>
 
     <!-- Urgent Deadline Alert Banner -->
@@ -260,6 +322,9 @@
       </div>
     </div>
   </div>
+
+  <!-- Toast Notification Container -->
+  <div class="toast-container" id="toast-container"></div>
 
   <!-- Main Application Script -->
   <script src="js/app.js"></script>

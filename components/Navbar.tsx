@@ -35,7 +35,7 @@ export default function Navbar({ onOpenAddModal }: NavbarProps) {
         </div>
 
         {/* Date & Add Action Button */}
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-3">
           <div className="hidden md:flex items-center gap-2 text-xs text-slate-300 bg-slate-800/80 px-3 py-1.5 rounded-md border border-slate-700">
             <Calendar className="w-3.5 h-3.5 text-blue-400" />
             <span>{today}</span>

@@ -70,6 +70,127 @@ class HomeworkTrackerApp {
     this.startLiveClock();
     this.setupEventListeners();
     this.renderAll();
+    this.checkInitialNotifications();
+  }
+
+  // Toast Notification System
+  showToast(title, message, type = 'success') {
+    const container = document.getElementById('toast-container');
+    if (!container) return;
+
+    const toast = document.createElement('div');
+    toast.className = `toast-item toast-${type}`;
+
+    let iconClass = 'fa-solid fa-circle-check';
+    if (type === 'info') iconClass = 'fa-solid fa-circle-info';
+    else if (type === 'warning') iconClass = 'fa-solid fa-triangle-exclamation';
+    else if (type === 'danger') iconClass = 'fa-solid fa-trash-can';
+
+    toast.innerHTML = `
+      <div class="toast-icon">
+        <i class="${iconClass}"></i>
+      </div>
+      <div class="toast-content">
+        <div class="toast-title">${title}</div>
+        ${message ? `<div class="toast-desc">${message}</div>` : ''}
+      </div>
+      <button class="toast-close" onclick="this.parentElement.remove()"><i class="fa-solid fa-xmark"></i></button>
+    `;
+
+    container.appendChild(toast);
+
+    setTimeout(() => {
+      toast.style.opacity = '0';
+      toast.style.transform = 'translateY(20px)';
+      setTimeout(() => toast.remove(), 300);
+    }, 4000);
+  }
+
+  // Check initial urgent/overdue tasks and show toast alert on load
+  checkInitialNotifications() {
+    const overdueCount = this.tasks.filter(t => this.getEffectiveStatus(t) === 'overdue').length;
+    if (overdueCount > 0) {
+      setTimeout(() => {
+        this.showToast('แจ้งเตือนการบ้านเลยกำหนดส่ง!', `มี ${overdueCount} รายการเลยกำหนดส่งแล้ว กรุณาตรวจสอบ`, 'danger');
+      }, 600);
+    }
+  }
+
+  // Toggle Notification Center Dropdown
+  toggleNotifDropdown() {
+    const dropdown = document.getElementById('notif-dropdown');
+    if (!dropdown) return;
+    dropdown.classList.toggle('active');
+  }
+
+  // Request Web Browser Notifications Permission
+  requestNotificationPermission() {
+    if (!("Notification" in window)) {
+      this.showToast("ระบบไม่รองรับ", "เบราว์เซอร์ของคุณไม่รองรับการแจ้งเตือนแบบ Push", "warning");
+      return;
+    }
+
+    Notification.requestPermission().then(permission => {
+      if (permission === "granted") {
+        this.showToast("เปิดแจ้งเตือนสำเร็จ!", "ระบบจะเตือนเมื่อการบ้านใกล้ถึงกำหนดส่ง", "success");
+        new Notification("ระบบติดตามการบ้าน", {
+          body: "เปิดการแจ้งเตือนเดดไลน์เรียบร้อยแล้ว!",
+          icon: "https://cdn-icons-png.flaticon.com/512/2991/2991106.png"
+        });
+      } else {
+        this.showToast("การแจ้งเตือนถูกปฏิเสธ", "คุณปิดกั้นการแจ้งเตือนของเบราว์เซอร์ไว้", "warning");
+      }
+    });
+  }
+
+  renderNotificationsList() {
+    const container = document.getElementById('notif-list-container');
+    const badge = document.getElementById('notif-count-badge');
+    if (!container) return;
+
+    const urgentOrOverdue = this.tasks.filter(t => {
+      const effStatus = this.getEffectiveStatus(t);
+      if (effStatus === 'overdue') return true;
+      if (effStatus === 'done') return false;
+
+      const due = new Date(`${t.due_date}T23:59:59`);
+      const diffHours = (due - new Date()) / (1000 * 60 * 60);
+      return diffHours > 0 && diffHours <= 48;
+    });
+
+    if (badge) {
+      if (urgentOrOverdue.length > 0) {
+        badge.style.display = 'flex';
+        badge.textContent = urgentOrOverdue.length;
+      } else {
+        badge.style.display = 'none';
+      }
+    }
+
+    if (urgentOrOverdue.length === 0) {
+      container.innerHTML = `
+        <div style="text-align: center; padding: 24px 12px; color: #94a3b8; font-size: 0.82rem;">
+          <i class="fa-regular fa-bell-slash" style="font-size: 1.5rem; margin-bottom: 6px; display: block;"></i>
+          ไม่มีการแจ้งเตือนเดดไลน์ในขณะนี้
+        </div>
+      `;
+      return;
+    }
+
+    container.innerHTML = urgentOrOverdue.map(t => {
+      const effStatus = this.getEffectiveStatus(t);
+      const isOverdue = effStatus === 'overdue';
+
+      return `
+        <div class="notif-item" onclick="app.toggleNotifDropdown(); app.openEditModal('${t.id}')">
+          <div class="notif-item-title">${t.title}</div>
+          <div class="notif-item-desc">${t.subject}</div>
+          <div class="notif-item-time" style="${isOverdue ? 'color: #dc2626;' : 'color: #d97706;'}">
+            <i class="fa-regular fa-clock"></i> ${isOverdue ? 'เลยกำหนดส่งแล้ว!' : `กำหนดส่ง: ${t.due_date}`}
+          </div>
+        </div>
+      `;
+    }).join('');
   }
 
   saveTasks() {
@@ -117,6 +238,7 @@ class HomeworkTrackerApp {
   renderAll() {
     this.renderStats();
     this.renderUrgentBanner();
+    this.renderNotificationsList();
     this.populateSubjectSelect();
     
     if (this.activeView === 'list') {
@@ -130,7 +252,7 @@ class HomeworkTrackerApp {
     }
   }
 
-  // Dashboard Stats Summary (5 Cards)
+  // Dashboard Stats Summary (5 Cards - Dynamic Progress System)
   renderStats() {
     const total = this.tasks.length;
     const done = this.tasks.filter(t => this.getEffectiveStatus(t) === 'done').length;
@@ -143,6 +265,31 @@ class HomeworkTrackerApp {
     document.getElementById('stat-progress').textContent = inProgress;
     document.getElementById('stat-pending').textContent = notStarted;
     document.getElementById('stat-overdue').textContent = overdue;
+
+    const donePct = total > 0 ? Math.round((done / total) * 100) : 0;
+    const inProgressPct = total > 0 ? Math.round((inProgress / total) * 100) : 0;
+    const notStartedPct = total > 0 ? Math.round((notStarted / total) * 100) : 0;
+    const overduePct = total > 0 ? Math.round((overdue / total) * 100) : 0;
+
+    const doneBar = document.getElementById('stat-done-bar');
+    const progressBar = document.getElementById('stat-progress-bar');
+    const pendingBar = document.getElementById('stat-pending-bar');
+    const overdueBar = document.getElementById('stat-overdue-bar');
+
+    if (doneBar) doneBar.style.width = `${donePct}%`;
+    if (progressBar) progressBar.style.width = `${inProgressPct}%`;
+    if (pendingBar) pendingBar.style.width = `${notStartedPct}%`;
+    if (overdueBar) overdueBar.style.width = `${overduePct}%`;
+
+    const donePctEl = document.getElementById('stat-done-pct');
+    const progressPctEl = document.getElementById('stat-progress-pct');
+    const pendingPctEl = document.getElementById('stat-pending-pct');
+    const overduePctEl = document.getElementById('stat-overdue-pct');
+
+    if (donePctEl) donePctEl.textContent = `${donePct}% ของงานทั้งหมด`;
+    if (progressPctEl) progressPctEl.textContent = `${inProgressPct}% อยู่ระหว่างทำ`;
+    if (pendingPctEl) pendingPctEl.textContent = `${notStartedPct}% รอเริ่มงาน`;
+    if (overduePctEl) overduePctEl.textContent = `${overduePct}% ต้องรีบส่งด่วน`;
   }
 
   // Urgent Deadline Alert Banner (within 48 hours)
@@ -480,9 +627,18 @@ class HomeworkTrackerApp {
     const task = this.tasks.find(t => t.id === id);
     if (!task) return;
 
+    const oldStatus = task.status;
     task.status = newStatus;
     this.saveTasks();
     this.renderAll();
+
+    const statusLabels = {
+      'done': 'ส่งแล้ว 🟢',
+      'in_progress': 'กำลังทำ 🟡',
+      'not_started': 'ยังไม่เริ่ม 🔴'
+    };
+
+    this.showToast('อัปเดตสถานะสำเร็จ!', `เปลี่ยนสถานะเป็น "${statusLabels[newStatus] || newStatus}" แล้ว`, 'info');
   }
 
   // Reset Title Validation Error UI
@@ -555,6 +711,8 @@ class HomeworkTrackerApp {
     const status = document.getElementById('form-status').value;
     const description = document.getElementById('form-desc').value;
 
+    const isEdit = !!this.editingTaskId;
+
     if (this.editingTaskId) {
       const idx = this.tasks.findIndex(t => t.id === this.editingTaskId);
       if (idx !== -1) {
@@ -584,6 +742,12 @@ class HomeworkTrackerApp {
     this.saveTasks();
     this.closeModal();
     this.renderAll();
+
+    if (isEdit) {
+      this.showToast('อัปเดตข้อมูลสำเร็จ! ✏️', `แก้ไขการบ้าน "${title}" เรียบร้อยแล้ว`, 'info');
+    } else {
+      this.showToast('เพิ่มการบ้านสำเร็จ! 🎉', `บันทึกการบ้าน "${title}" เรียบร้อยแล้ว`, 'success');
+    }
   }
 
   // Feature 4: Delete Task with Confirmation Popup
@@ -592,9 +756,11 @@ class HomeworkTrackerApp {
     if (!task) return;
 
     if (confirm(`ยืนยันลบงาน "${task.title}" หรือไม่?`)) {
+      const deletedTitle = task.title;
       this.tasks = this.tasks.filter(t => t.id !== id);
       this.saveTasks();
       this.renderAll();
+      this.showToast('ลบการบ้านเรียบร้อย 🗑️', `ลบรายการ "${deletedTitle}" แล้ว`, 'danger');
     }
   }
 
