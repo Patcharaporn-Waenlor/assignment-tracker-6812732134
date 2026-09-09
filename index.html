@@ -55,53 +55,68 @@
 
     <!-- Dashboard Summary Stat Cards (5 Cards) -->
     <div class="dashboard-grid">
-      <div class="stat-card total-border" onclick="app.filterByStatCard('all')" title="คลิกเพื่อดูกระดานงานทั้งหมด">
-        <div class="stat-info">
-          <div class="stat-label">งานทั้งหมด</div>
+      <div class="stat-card total" onclick="app.filterByStatCard('all')" title="คลิกเพื่อดูกระดานงานทั้งหมด">
+        <div class="stat-card-header">
+          <span class="stat-label">งานทั้งหมด</span>
+          <span class="stat-badge total">All</span>
+        </div>
+        <div class="stat-card-body">
           <div class="stat-value" id="stat-total">0</div>
-        </div>
-        <div class="stat-icon total">
-          <i class="fa-regular fa-file-lines"></i>
+          <div class="stat-icon total">
+            <i class="fa-solid fa-layer-group"></i>
+          </div>
         </div>
       </div>
 
-      <div class="stat-card done-border" onclick="app.filterByStatCard('done')" title="คลิกเพื่อดูกรองเฉพาะงานที่ส่งแล้ว">
-        <div class="stat-info">
-          <div class="stat-label">ส่งแล้ว (Done)</div>
+      <div class="stat-card done" onclick="app.filterByStatCard('done')" title="คลิกเพื่อดูกรองเฉพาะงานที่ส่งแล้ว">
+        <div class="stat-card-header">
+          <span class="stat-label">ส่งแล้ว</span>
+          <span class="stat-badge done">Done</span>
+        </div>
+        <div class="stat-card-body">
           <div class="stat-value" id="stat-done">0</div>
-        </div>
-        <div class="stat-icon done">
-          <i class="fa-regular fa-circle-check"></i>
+          <div class="stat-icon done">
+            <i class="fa-solid fa-circle-check"></i>
+          </div>
         </div>
       </div>
 
-      <div class="stat-card progress-border" onclick="app.filterByStatCard('in_progress')" title="คลิกเพื่อดูกรองเฉพาะงานที่กำลังทำ">
-        <div class="stat-info">
-          <div class="stat-label">กำลังทำ (In Progress)</div>
+      <div class="stat-card progress" onclick="app.filterByStatCard('in_progress')" title="คลิกเพื่อดูกรองเฉพาะงานที่กำลังทำ">
+        <div class="stat-card-header">
+          <span class="stat-label">กำลังทำ</span>
+          <span class="stat-badge progress">In Progress</span>
+        </div>
+        <div class="stat-card-body">
           <div class="stat-value" id="stat-progress">0</div>
-        </div>
-        <div class="stat-icon progress">
-          <i class="fa-regular fa-clock"></i>
+          <div class="stat-icon progress">
+            <i class="fa-solid fa-spinner"></i>
+          </div>
         </div>
       </div>
 
-      <div class="stat-card pending-border" onclick="app.filterByStatCard('not_started')" title="คลิกเพื่อดูกรองเฉพาะงานที่ยังไม่เริ่ม">
-        <div class="stat-info">
-          <div class="stat-label">ยังไม่เริ่ม (Not Started)</div>
+      <div class="stat-card pending" onclick="app.filterByStatCard('not_started')" title="คลิกเพื่อดูกรองเฉพาะงานที่ยังไม่เริ่ม">
+        <div class="stat-card-header">
+          <span class="stat-label">ยังไม่เริ่ม</span>
+          <span class="stat-badge pending">Not Started</span>
+        </div>
+        <div class="stat-card-body">
           <div class="stat-value" id="stat-pending">0</div>
-        </div>
-        <div class="stat-icon pending">
-          <i class="fa-solid fa-triangle-exclamation"></i>
+          <div class="stat-icon pending">
+            <i class="fa-solid fa-circle-exclamation"></i>
+          </div>
         </div>
       </div>
 
-      <div class="stat-card overdue-border" onclick="app.filterByStatCard('overdue')" title="คลิกเพื่อดูกรองเฉพาะงานที่เลยกำหนดส่ง">
-        <div class="stat-info">
-          <div class="stat-label">เลยกำหนดส่ง (Overdue)</div>
-          <div class="stat-value" id="stat-overdue">0</div>
+      <div class="stat-card overdue" onclick="app.filterByStatCard('overdue')" title="คลิกเพื่อดูกรองเฉพาะงานที่เลยกำหนดส่ง">
+        <div class="stat-card-header">
+          <span class="stat-label">เลยกำหนดส่ง</span>
+          <span class="stat-badge overdue">Overdue</span>
         </div>
-        <div class="stat-icon overdue">
-          <i class="fa-solid fa-clock-rotate-left"></i>
+        <div class="stat-card-body">
+          <div class="stat-value" id="stat-overdue">0</div>
+          <div class="stat-icon overdue">
+            <i class="fa-solid fa-clock-rotate-left"></i>
+          </div>
         </div>
       </div>
     </div>
