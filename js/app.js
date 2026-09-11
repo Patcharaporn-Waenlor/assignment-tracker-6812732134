@@ -65,12 +65,37 @@ class HomeworkTrackerApp {
     this.init();
   }
 
-  init() {
-    this.saveTasks();
+  async init() {
     this.startLiveClock();
     this.setupEventListeners();
-    this.renderAll();
+    await this.fetchTasksFromAPI();
     this.checkInitialNotifications();
+  }
+
+  // Fetch Tasks from AppServ PHP/MySQL API
+  async fetchTasksFromAPI() {
+    try {
+      const response = await fetch('api.php');
+      if (response.ok) {
+        const data = await response.json();
+        if (Array.isArray(data) && data.length > 0) {
+          this.tasks = data.map(t => ({
+            ...t,
+            id: String(t.id),
+            subject: t.subject || 'ทั่วไป',
+            task_type: t.task_type || 'individual',
+            description: t.description || ''
+          }));
+          this.saveTasks();
+          this.renderAll();
+          return;
+        }
+      }
+    } catch (err) {
+      console.warn('Backend API connection failed, using local storage:', err);
+    }
+    this.tasks = JSON.parse(localStorage.getItem('assignment_tracker_data')) || INITIAL_DEMO_TASKS;
+    this.renderAll();
   }
 
   // Toast Notification System
@@ -623,13 +648,12 @@ class HomeworkTrackerApp {
   }
 
   // Update Status Action
-  updateTaskStatus(id, newStatus) {
-    const task = this.tasks.find(t => t.id === id);
+  async updateTaskStatus(id, newStatus) {
+    const task = this.tasks.find(t => String(t.id) === String(id));
     if (!task) return;
 
     const oldStatus = task.status;
     task.status = newStatus;
-    this.saveTasks();
     this.renderAll();
 
     const statusLabels = {
@@ -638,6 +662,23 @@ class HomeworkTrackerApp {
       'not_started': 'ยังไม่เริ่ม 🔴'
     };
 
+    try {
+      const response = await fetch('api.php', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: Number(id) || id, status: newStatus })
+      });
+      const resData = await response.json();
+      if (resData.status === 'success') {
+        this.saveTasks();
+        this.showToast('อัปเดตสถานะสำเร็จ!', `เปลี่ยนสถานะเป็น "${statusLabels[newStatus] || newStatus}" แล้ว`, 'info');
+        return;
+      }
+    } catch (err) {
+      console.warn('API update status failed:', err);
+    }
+
+    this.saveTasks();
     this.showToast('อัปเดตสถานะสำเร็จ!', `เปลี่ยนสถานะเป็น "${statusLabels[newStatus] || newStatus}" แล้ว`, 'info');
   }
 
@@ -663,7 +704,7 @@ class HomeworkTrackerApp {
 
   // Open Edit Modal
   openEditModal(id) {
-    const task = this.tasks.find(t => t.id === id);
+    const task = this.tasks.find(t => String(t.id) === String(id));
     if (!task) return;
 
     this.editingTaskId = id;
@@ -686,8 +727,8 @@ class HomeworkTrackerApp {
     this.resetFormValidation();
   }
 
-  // Feature 4: Save Task Form Submission with Validation
-  saveTaskForm(event) {
+  // Feature 4: Save Task Form Submission with Validation & API Persistence
+  async saveTaskForm(event) {
     event.preventDefault();
 
     const titleInput = document.getElementById('form-title');
@@ -712,29 +753,53 @@ class HomeworkTrackerApp {
     const description = document.getElementById('form-desc').value;
 
     const isEdit = !!this.editingTaskId;
+    const payload = {
+      title,
+      subject,
+      task_type,
+      due_date,
+      status,
+      description
+    };
 
+    if (isEdit) {
+      payload.id = Number(this.editingTaskId) || this.editingTaskId;
+    }
+
+    try {
+      const response = await fetch('api.php', {
+        method: isEdit ? 'PUT' : 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      const resData = await response.json();
+
+      if (resData.status === 'success') {
+        await this.fetchTasksFromAPI();
+        this.closeModal();
+        if (isEdit) {
+          this.showToast('อัปเดตข้อมูลสำเร็จ! ✏️', `แก้ไขการบ้าน "${title}" เรียบร้อยแล้ว`, 'info');
+        } else {
+          this.showToast('เพิ่มการบ้านสำเร็จ! 🎉', `บันทึกการบ้าน "${title}" ลงฐานข้อมูล AppServ เรียบร้อยแล้ว`, 'success');
+        }
+        return;
+      } else {
+        this.showToast('เกิดข้อผิดพลาดในการบันทึก', resData.message || 'ไม่สามารถบันทึกลงฐานข้อมูลได้', 'danger');
+      }
+    } catch (err) {
+      console.warn('API save task error, saving locally:', err);
+    }
+
+    // Local fallback if API call fails
     if (this.editingTaskId) {
-      const idx = this.tasks.findIndex(t => t.id === this.editingTaskId);
+      const idx = this.tasks.findIndex(t => String(t.id) === String(this.editingTaskId));
       if (idx !== -1) {
-        this.tasks[idx] = {
-          ...this.tasks[idx],
-          title,
-          subject,
-          task_type,
-          due_date,
-          status,
-          description
-        };
+        this.tasks[idx] = { ...this.tasks[idx], ...payload };
       }
     } else {
       const newTask = {
         id: `task-${Date.now()}`,
-        title,
-        subject,
-        task_type,
-        due_date,
-        status,
-        description
+        ...payload
       };
       this.tasks.unshift(newTask);
     }
@@ -750,14 +815,32 @@ class HomeworkTrackerApp {
     }
   }
 
-  // Feature 4: Delete Task with Confirmation Popup
-  deleteTask(id) {
-    const task = this.tasks.find(t => t.id === id);
+  // Delete Task with Confirmation Popup & API Persistence
+  async deleteTask(id) {
+    const task = this.tasks.find(t => String(t.id) === String(id));
     if (!task) return;
 
     if (confirm(`ยืนยันลบงาน "${task.title}" หรือไม่?`)) {
       const deletedTitle = task.title;
-      this.tasks = this.tasks.filter(t => t.id !== id);
+
+      try {
+        const response = await fetch(`api.php?id=${id}`, {
+          method: 'DELETE',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ id: Number(id) || id })
+        });
+        const resData = await response.json();
+
+        if (resData.status === 'success') {
+          await this.fetchTasksFromAPI();
+          this.showToast('ลบการบ้านเรียบร้อย 🗑️', `ลบรายการ "${deletedTitle}" ออกจาก AppServ แล้ว`, 'danger');
+          return;
+        }
+      } catch (err) {
+        console.warn('API delete error:', err);
+      }
+
+      this.tasks = this.tasks.filter(t => String(t.id) !== String(id));
       this.saveTasks();
       this.renderAll();
       this.showToast('ลบการบ้านเรียบร้อย 🗑️', `ลบรายการ "${deletedTitle}" แล้ว`, 'danger');
